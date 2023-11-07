@@ -5,7 +5,7 @@ public class Server {
 
     Server(ServerApplication app)
     {
-    };
+    }
 
     void start()
     {
