@@ -1,7 +1,8 @@
 package at.technikum.server;
 
 import at.technikum.server.http.Request;
+import at.technikum.server.http.Response;
 
 public interface ServerApplication {
-    void handle(Request request);
+    Response handle(Request request);
 }
