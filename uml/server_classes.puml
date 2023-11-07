@@ -1,0 +1,30 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package http
+{
+    enum ContentType
+    enum HttpMethod
+    class Request
+    class Response
+}
+
+package util
+{
+    class HttpMapper
+}
+
+interface ServerApplication
+
+class Server
+{
+    - app: ServerApplication
+}
+
+class RequestHandler
+{
+    - app: ServerApplication
+    - client: Socket
+}
+
+@enduml
