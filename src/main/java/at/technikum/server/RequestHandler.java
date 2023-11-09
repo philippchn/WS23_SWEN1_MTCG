@@ -24,7 +24,12 @@ public class RequestHandler {
         System.out.println(getHttpStringFromStream(bufferedReader));
 
         printWriter = new PrintWriter(socket.getOutputStream(), true);
-        printWriter.write("HTTP/200/r/n");
+        printWriter.write("""
+                HTTP/1.1 200 OK\r
+                Content-Type: text/html\r
+                Content-Length: 14\r
+                \r
+                <h1>Hallo</h1>""");
 
         printWriter.close();
         bufferedReader.close();
