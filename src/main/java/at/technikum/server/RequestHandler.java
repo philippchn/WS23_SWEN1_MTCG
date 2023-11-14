@@ -1,5 +1,9 @@
 package at.technikum.server;
 
+import at.technikum.server.http.Request;
+import at.technikum.server.http.Response;
+import at.technikum.server.util.HttpMapper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,44 +11,45 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class RequestHandler {
-    private final Socket socket;
-    private final ServerApplication serverApplication;
-    private BufferedReader bufferedReader;
 
-    private PrintWriter printWriter;
-    RequestHandler(Socket socket, ServerApplication serverApplication)
-    {
-        this.socket = socket;
-        this.serverApplication = serverApplication;
+    private BufferedReader in;
+    private PrintWriter out;
+
+    private final Socket client;
+
+    private final ServerApplication app;
+
+    public RequestHandler(Socket client, ServerApplication app) {
+        this.client = client;
+        this.app = app;
     }
 
     public void handle() throws IOException {
-        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-        System.out.println(getHttpStringFromStream(bufferedReader));
+        String httpRequest = getHttpStringFromStream(in);
 
-        printWriter = new PrintWriter(socket.getOutputStream(), true);
-        printWriter.write("""
-                HTTP/1.1 200 OK\r
-                Content-Type: text/html\r
-                Content-Length: 14\r
-                \r
-                <h1>Hallo</h1>""");
+        Request request = HttpMapper.toRequestObject(httpRequest);
+        Response response = app.handle(request);
 
-        printWriter.close();
-        bufferedReader.close();
-        socket.close();
+        out = new PrintWriter(client.getOutputStream(), true);
+        out.write(HttpMapper.toResponseString(response));
+
+        out.close();
+        in.close();
+        client.close();
     }
 
-    private String getHttpStringFromStream(BufferedReader bufferedReader) throws IOException {
-        StringBuilder result = new StringBuilder();
+    private String getHttpStringFromStream(BufferedReader in) throws IOException {
+        StringBuilder builder = new StringBuilder();
 
         String inputLine;
-        while((inputLine = bufferedReader.readLine()) != null && !inputLine.isEmpty())
-        {
-            result.append(inputLine).append(System.lineSeparator());
+        while ((inputLine = in.readLine()) != null && !inputLine.equals("")) {
+            builder
+                    .append(inputLine)
+                    .append(System.lineSeparator());
         }
 
-        return result.toString();
+        return builder.toString();
     }
 }
