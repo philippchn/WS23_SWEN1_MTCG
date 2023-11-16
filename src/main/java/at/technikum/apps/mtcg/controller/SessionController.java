@@ -5,11 +5,10 @@ import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 
-public class UserController implements Controller {
-
+public class SessionController implements Controller{
     @Override
     public boolean supports(String route) {
-        return route.startsWith("/users");
+        return route.startsWith("/sessions");
     }
 
     @Override
@@ -17,7 +16,7 @@ public class UserController implements Controller {
         Response response = new Response();
         response.setStatus(HttpStatus.OK);
         response.setContentType(HttpContentType.TEXT_PLAIN);
-        response.setBody("user controller");
+        response.setBody("session controller");
 
         return response;
     }
