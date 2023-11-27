@@ -8,10 +8,10 @@ public class Server {
 
     private ServerSocket server;
 
-    private final ServerApplication serverApplication;
+    private final ServerApplication app;
 
-    public Server(ServerApplication serverApplication) {
-        this.serverApplication = serverApplication;
+    public Server(ServerApplication app) {
+        this.app = app;
     }
 
     public void start() {
@@ -27,7 +27,7 @@ public class Server {
             try {
                 Socket socket = server.accept();
 
-                RequestHandler handler = new RequestHandler(socket, serverApplication);
+                RequestHandler handler = new RequestHandler(socket, app);
                 handler.handle();
 
             } catch (IOException e) {

@@ -9,7 +9,7 @@ public class UserController implements Controller {
 
     @Override
     public boolean supports(String route) {
-        return route.startsWith("/users");
+        return route.equals("/users");
     }
 
     @Override
