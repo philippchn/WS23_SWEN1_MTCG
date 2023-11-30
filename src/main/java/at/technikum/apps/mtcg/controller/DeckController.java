@@ -5,7 +5,7 @@ import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 
-public class DeckController implements Controller{
+public class DeckController extends Controller{
     @Override
     public boolean supports(String route) {
         return route.startsWith("/deck");

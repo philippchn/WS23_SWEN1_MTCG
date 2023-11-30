@@ -5,7 +5,7 @@ import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 
-public class TradingController implements Controller{
+public class TradingController extends Controller{
     @Override
     public boolean supports(String route) {
         return route.startsWith("/tradings");
