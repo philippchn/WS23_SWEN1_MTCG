@@ -15,13 +15,15 @@ public class SessionController extends Controller {
     public Response handle(Request request) {
         Response response = new Response();
 
-        switch(request.getMethod())
-        {
-            case "POST": return status(HttpStatus.OK);
+        if (request.getRoute().equals("/sessions")) {
+            return switch (request.getMethod()) {
+                case "POST" ->  status(HttpStatus.OK);
+                default ->
+                        status(HttpStatus.METHOD_NOT_ALLOWED);
+            };
         }
 
-        // THOUGHT: better 405
-        return status(HttpStatus.BAD_REQUEST);
+        return response;
     }
 
     void mapToTokenRequest(String username, String password)

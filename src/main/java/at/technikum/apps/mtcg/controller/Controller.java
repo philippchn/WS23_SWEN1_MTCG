@@ -14,6 +14,7 @@ public abstract class Controller {
     /**
      * Return a Response using a httpStatus Code.
      * The User will get the default error message of the status code as response.
+     * Content Type is JSON by default.
      */
     protected Response status(HttpStatus httpStatus) {
         Response response = new Response();
@@ -26,13 +27,21 @@ public abstract class Controller {
 
     /**
      * Return a Response using a httpStatus Code.
-     * You can specify the error message of the status code the user receives
+     * You can specify the body of the status code the user receives.
+     * Content Type is JSON by default.
      */
-    protected Response status(HttpStatus httpStatus, String errorMessage) {
+    protected Response statusCustomBody(HttpStatus httpStatus, String body) {
         Response response = new Response();
         response.setStatus(httpStatus);
         response.setContentType(HttpContentType.APPLICATION_JSON);
-        response.setBody("{ \"error\": \"" + errorMessage + "\"}");
+        if (httpStatus.getCode() >= 400)
+        {
+            response.setBody("{ \"error\": \""+ body + "\"}");
+        }
+        else
+        {
+            response.setBody(body);
+        }
 
         return response;
     }

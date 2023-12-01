@@ -8,8 +8,7 @@ import java.util.List;
 
 public class UserService {
     private final UserRepository userRepository = new UserRepository();
-    public List<User> findAll()
-    {
+    public List<User> findAll() throws SQLException {
         return userRepository.findAll();
     }
 

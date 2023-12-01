@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
+import java.util.List;
 
 public class UserController extends Controller {
 
@@ -29,11 +30,12 @@ public class UserController extends Controller {
         Response response = new Response();
 
         if (request.getRoute().equals("/users")) {
-            switch (request.getMethod()) {
-                case "POST": return create(request);
-            }
-            // THOUGHT: better 405
-            return status(HttpStatus.BAD_REQUEST);
+            return switch (request.getMethod()) {
+                case "POST" -> create(request);
+                case "GET" -> readAll();
+                default ->
+                        status(HttpStatus.METHOD_NOT_ALLOWED);
+            };
         }
 
         return response;
@@ -42,13 +44,13 @@ public class UserController extends Controller {
     public Response create(Request request)
     {
         ObjectMapper objectMapper = new ObjectMapper();
-        User user = null;
+        User user;
         try
         {
             user = objectMapper.readValue(request.getBody(), User.class);
         }
         catch (JsonProcessingException e) {
-            return status(HttpStatus.BAD_REQUEST, "JSON invalid");
+            return statusCustomBody(HttpStatus.BAD_REQUEST, "JSON invalid");
         }
 
         try
@@ -57,18 +59,39 @@ public class UserController extends Controller {
         }
         catch (SQLException e)
         {
-            return status(HttpStatus.BAD_REQUEST, e.getMessage());
+            return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
-        String userJson = null;
+        String userJson;
         try
         {
             userJson = objectMapper.writeValueAsString(user);
         }
         catch (JsonProcessingException e) {
-            return status(HttpStatus.BAD_REQUEST, e.getMessage());
+            return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
-        return status(HttpStatus.CREATED, userJson);
+        return statusCustomBody(HttpStatus.CREATED, userJson);
+    }
+
+    public Response readAll()
+    {
+        List<User> users;
+        try
+        {
+           users = userService.findAll();
+           ObjectMapper objectMapper = new ObjectMapper();
+           String usersJson = objectMapper.writeValueAsString(users);
+
+           return statusCustomBody(HttpStatus.OK, usersJson);
+        }
+        catch (SQLException e)
+        {
+            return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        catch(JsonProcessingException e)
+        {
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

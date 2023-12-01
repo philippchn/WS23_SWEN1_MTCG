@@ -16,27 +16,22 @@ public class UserRepository{
     private final String SAVE_SQL = "INSERT INTO usertable (username, password) VALUES(?, ?)";
 
     private final UserDatabase userDatabase = new UserDatabase();
-    public List<User> findAll()
-    {
+
+    public List<User> findAll() throws SQLException {
         List<User> users = new ArrayList<>();
 
-        try (
-                Connection con = userDatabase.getConnection();
-                PreparedStatement pstmt = con.prepareStatement(FIND_ALL_SQL);
-                ResultSet rs = pstmt.executeQuery()
-        ) {
-            while (rs.next()) {
-                User user = new User(
-                        rs.getString("name"),
-                        rs.getString("password")
-                );
-                users.add(user);
-            }
+        Connection con = userDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(FIND_ALL_SQL);
+        ResultSet rs = pstmt.executeQuery();
 
-            return users;
-        } catch (SQLException e) {
-            return users;
+        while (rs.next()) {
+            User user = new User(
+                    rs.getString("username"),
+                    rs.getString("password")
+            );
+            users.add(user);
         }
+        return users;
     }
 
     public User save(User user) throws SQLException {
