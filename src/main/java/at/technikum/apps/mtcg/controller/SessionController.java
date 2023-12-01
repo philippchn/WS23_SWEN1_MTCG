@@ -5,7 +5,7 @@ import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 
-public class SessionController implements Controller{
+public class SessionController extends Controller {
     @Override
     public boolean supports(String route) {
         return route.startsWith("/sessions");
@@ -14,10 +14,18 @@ public class SessionController implements Controller{
     @Override
     public Response handle(Request request) {
         Response response = new Response();
-        response.setStatus(HttpStatus.OK);
-        response.setContentType(HttpContentType.TEXT_PLAIN);
-        response.setBody("session controller");
 
-        return response;
+        switch(request.getMethod())
+        {
+            case "POST": return status(HttpStatus.OK);
+        }
+
+        // THOUGHT: better 405
+        return status(HttpStatus.BAD_REQUEST);
+    }
+
+    void mapToTokenRequest(String username, String password)
+    {
+
     }
 }
