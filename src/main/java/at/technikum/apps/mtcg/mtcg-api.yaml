@@ -1,6 +1,7 @@
 openapi: 3.0.3
 info:
   title: Monster Trading Cards Game
+  version: "1"
   description: |-
     This is the specification of the required API endpoints for the MTCG server.
 servers:
@@ -27,7 +28,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/UserCredentials'
+              $ref: '#/components/schemas/UserCredentials'
         required: true
       responses:
         '201':
@@ -38,7 +39,7 @@ paths:
     get:
       tags:
         - users
-      summary: Retrieves the user data for the given username. 
+      summary: Retrieves the user data for the given username.
       description: Retrieves the user data for the username provided in the route. Only the admin or the matching user can successfully retrieve the data.
       parameters:
         - in: path
@@ -78,7 +79,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/UserData'
+              $ref: '#/components/schemas/UserData'
         required: true
       responses:
         '200':
@@ -99,7 +100,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/UserCredentials'
+              $ref: '#/components/schemas/UserCredentials'
         required: true
       responses:
         '200':
