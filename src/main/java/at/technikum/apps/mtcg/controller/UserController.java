@@ -1,6 +1,7 @@
 package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.entity.User;
+import at.technikum.apps.mtcg.entity.UserData;
 import at.technikum.apps.mtcg.service.UserService;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
@@ -10,77 +11,101 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class UserController extends Controller {
 
-    private final UserService userService;
+    private final UserService userService = new UserService();
 
-    public UserController()
-    {
-        this.userService = new UserService();
-    }
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public boolean supports(String route) {
-        return route.equals("/users");
+        return route.startsWith("/users");
     }
 
     @Override
-    public Response handle(Request request) {
-        Response response = new Response();
-
-        if (request.getRoute().equals("/users")) {
+    public Response handle(Request request)
+    {
+        if (request.getRoute().equals("/users"))
+        {
             return switch (request.getMethod()) {
                 case "POST" -> create(request);
                 case "GET" -> readAll();
+                case "DELETE" -> deleteAll();
                 default ->
                         status(HttpStatus.METHOD_NOT_ALLOWED);
             };
         }
-
-        return response;
+        else
+        {
+            return switch (request.getMethod()) {
+                case "GET" -> getUserDataByUsername(request);
+                case "PUT" -> updateUser(request);
+                default ->
+                        status(HttpStatus.METHOD_NOT_ALLOWED);
+            };
+        }
     }
 
-    public Response create(Request request)
+    private Response deleteAll()
     {
-        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            userService.deleteAll();
+        }
+        catch (SQLException e)
+        {
+            return statusCustomBody(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+        return status(HttpStatus.OK);
+    }
+
+    private User jsonToUserObject(Request request) throws JsonProcessingException
+    {
+        return objectMapper.readValue(request.getBody(), User.class);
+    }
+
+    private UserData jsonToUserDataObject(Request request) throws JsonProcessingException
+    {
+        return objectMapper.readValue(request.getBody(), UserData.class);
+    }
+
+    private Response create(Request request)
+    {
         User user;
         try
         {
-            user = objectMapper.readValue(request.getBody(), User.class);
+            user = jsonToUserObject(request);
         }
-        catch (JsonProcessingException e) {
+        catch (JsonProcessingException e)
+        {
             return statusCustomBody(HttpStatus.BAD_REQUEST, "JSON invalid");
         }
 
         try
         {
-            user = userService.save(user);
+            userService.save(user);
         }
         catch (SQLException e)
         {
-            return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
+            if (Objects.equals(e.getSQLState(), "23505"))
+            {
+                return status(HttpStatus.CONFLICT);
+            }
+            return statusCustomBody(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
 
-        String userJson;
-        try
-        {
-            userJson = objectMapper.writeValueAsString(user);
-        }
-        catch (JsonProcessingException e) {
-            return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-
-        return statusCustomBody(HttpStatus.CREATED, userJson);
+        return status(HttpStatus.CREATED);
     }
 
-    public Response readAll()
+    private Response readAll()
     {
         List<User> users;
         try
         {
            users = userService.findAll();
-           ObjectMapper objectMapper = new ObjectMapper();
            String usersJson = objectMapper.writeValueAsString(users);
 
            return statusCustomBody(HttpStatus.OK, usersJson);
@@ -93,5 +118,62 @@ public class UserController extends Controller {
         {
             return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private Response getUserDataByUsername(Request request)
+    {
+        Optional<UserData> userData;
+        try
+        {
+            String username = request.getRoute().replace("/users/", "");
+            userData = userService.getUserDataByUsername(username);
+        }
+        catch (SQLException e)
+        {
+            return statusCustomBody(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+
+        if (userData.isEmpty())
+        {
+            return statusCustomBody(HttpStatus.NOT_FOUND, "User not found");
+        }
+        String userJson;
+        try
+        {
+            userJson = objectMapper.writeValueAsString(userData.get());
+        }
+        catch (JsonProcessingException e)
+        {
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return statusCustomBody(HttpStatus.OK, userJson);
+    }
+
+    private Response updateUser(Request request)
+    {
+        UserData userData;
+        try
+        {
+            userData = jsonToUserDataObject(request);
+        }
+        catch (JsonProcessingException e)
+        {
+            return statusCustomBody(HttpStatus.BAD_REQUEST, "JSON invalid");
+        }
+
+        String username = request.getRoute().replace("/users/", "");
+        try
+        {
+            userService.updateUserDataByUsername(username, userData);
+        }
+        catch (SQLException e)
+        {
+            if (e.getSQLState().equals("23503"))
+            {
+                return statusCustomBody(HttpStatus.NOT_FOUND, "User not found");
+            }
+            return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return status(HttpStatus.OK);
     }
 }
