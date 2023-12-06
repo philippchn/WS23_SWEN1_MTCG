@@ -1,5 +1,7 @@
 package at.technikum.server.http;
 
+import java.util.Optional;
+
 public class Request {
 
     // GET, POST, PUT, DELETE
@@ -18,6 +20,8 @@ public class Request {
 
     // none, "{ "name": "foo" }"
     private String body;
+
+    private String authorizationToken;
 
     public String getMethod() {
         return method;
@@ -65,5 +69,13 @@ public class Request {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public String getAuthorizationToken() {
+        return authorizationToken;
+    }
+
+    public void setAuthorizationToken(String authorizationToken) {
+        this.authorizationToken = authorizationToken;
     }
 }

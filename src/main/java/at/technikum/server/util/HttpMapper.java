@@ -17,6 +17,7 @@ public class HttpMapper {
         request.setMethod(getHttpMethod(httpRequest));
         request.setRoute(getRoute(httpRequest));
         request.setHost(getHttpHeader("Host", httpRequest));
+        request.setAuthorizationToken(getAuthorizationToken(httpRequest));
 
         // THOUGHT: don't do the content parsing in this method
         String contentLengthHeader = getHttpHeader("Content-Length", httpRequest);
@@ -72,5 +73,15 @@ public class HttpMapper {
         }
 
         return matcher.group(1);
+    }
+
+    private static String getAuthorizationToken(String httpRequest)
+    {
+        if (httpRequest.split("\r")[7].startsWith("\nAuthorization: Bearer "))
+        {
+            return httpRequest.split("\r")[7].replace("Authorization: Bearer ", "").strip();
+
+        }
+        return "INVALID";
     }
 }
