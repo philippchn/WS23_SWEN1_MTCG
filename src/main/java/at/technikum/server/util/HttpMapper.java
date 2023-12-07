@@ -77,10 +77,13 @@ public class HttpMapper {
 
     private static String getAuthorizationToken(String httpRequest)
     {
-        if (httpRequest.split("\r")[7].startsWith("\nAuthorization: Bearer "))
+        String[] requestArray = httpRequest.split("\r");
+        for (String line : requestArray)
         {
-            return httpRequest.split("\r")[7].replace("Authorization: Bearer ", "").strip();
-
+            if (line.startsWith("\nAuthorization: Bearer "))
+            {
+                return line.replace("Authorization: Bearer ", "").strip();
+            }
         }
         return "INVALID";
     }
