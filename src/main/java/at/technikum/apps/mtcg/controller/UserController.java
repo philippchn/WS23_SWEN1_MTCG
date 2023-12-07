@@ -49,19 +49,6 @@ public class UserController extends Controller {
         }
     }
 
-    private Response deleteAll()
-    {
-        try
-        {
-            userService.deleteAll();
-        }
-        catch (SQLException e)
-        {
-            return statusCustomBody(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-        return status(HttpStatus.OK);
-    }
-
     private User jsonToUserObject(Request request) throws JsonProcessingException
     {
         return objectMapper.readValue(request.getBody(), User.class);
@@ -70,6 +57,19 @@ public class UserController extends Controller {
     private UserData jsonToUserDataObject(Request request) throws JsonProcessingException
     {
         return objectMapper.readValue(request.getBody(), UserData.class);
+    }
+
+    private boolean invalidToken(Request request, String username)
+    {
+        if (request.getAuthorizationToken().equals("admin-mtcgToken"))
+        {
+            return false;
+        }
+        if (request.getAuthorizationToken().equals(username + "-mtcgToken"))
+        {
+            return false;
+        }
+        return true;
     }
 
     private Response create(Request request)
@@ -122,10 +122,15 @@ public class UserController extends Controller {
 
     private Response getUserDataByUsername(Request request)
     {
+        String username = request.getRoute().replace("/users/", "");
+        if (invalidToken(request, username))
+        {
+            return status(HttpStatus.UNAUTHORIZED);
+        }
+
         Optional<UserData> userData;
         try
         {
-            String username = request.getRoute().replace("/users/", "");
             userData = userService.getUserDataByUsername(username);
         }
         catch (SQLException e)
@@ -162,6 +167,11 @@ public class UserController extends Controller {
         }
 
         String username = request.getRoute().replace("/users/", "");
+        if (invalidToken(request, username))
+        {
+            return status(HttpStatus.UNAUTHORIZED);
+        }
+
         try
         {
             userService.updateUserDataByUsername(username, userData);
@@ -173,6 +183,19 @@ public class UserController extends Controller {
                 return statusCustomBody(HttpStatus.NOT_FOUND, "User not found");
             }
             return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return status(HttpStatus.OK);
+    }
+
+    private Response deleteAll()
+    {
+        try
+        {
+            userService.deleteAll();
+        }
+        catch (SQLException e)
+        {
+            return statusCustomBody(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
         return status(HttpStatus.OK);
     }

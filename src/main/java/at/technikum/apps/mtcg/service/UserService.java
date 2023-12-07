@@ -22,7 +22,7 @@ public class UserService {
 
     public void deleteAll() throws SQLException
     {
-        userRepository.deleteAllFromUserTable();
+        userRepository.deleteAll();
     }
 
     public Optional<UserData> getUserDataByUsername(String username) throws SQLException
