@@ -20,7 +20,9 @@ public class UserRepository{
 
     private final String FIND_BY_USERNAME = "SELECT * FROM usertable WHERE username = ?";
 
-    private final String DELETE_ALL = "DELETE FROM usertable";
+    private final String DELETE_ALL_FROM_USERTABLE = "DELETE FROM usertable";
+
+    private final String DELETE_ALL_FROM_USERDATATABLE = "DELETE FROM userdatatable";
 
     private final String GET_USERDATA_BY_USERNAME = "SELECT * FROM userdatatable WHERE username = ?";
 
@@ -112,7 +114,11 @@ public class UserRepository{
     public void deleteAll() throws SQLException
     {
         Connection con = userDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(DELETE_ALL);
+
+        PreparedStatement pstmt = con.prepareStatement(DELETE_ALL_FROM_USERDATATABLE);
         pstmt.execute();
+
+        PreparedStatement pstmt2 = con.prepareStatement(DELETE_ALL_FROM_USERTABLE);
+        pstmt2.execute();
     }
 }
