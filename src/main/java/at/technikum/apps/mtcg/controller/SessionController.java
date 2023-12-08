@@ -2,8 +2,8 @@ package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.entity.Token;
 import at.technikum.apps.mtcg.entity.User;
+import at.technikum.apps.mtcg.repository.UserRepository;
 import at.technikum.apps.mtcg.service.SessionService;
-import at.technikum.server.http.HttpContentType;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class SessionController extends Controller {
 
-    private final SessionService sessionService = new SessionService();
+    private final SessionService sessionService = new SessionService(new UserRepository());
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
