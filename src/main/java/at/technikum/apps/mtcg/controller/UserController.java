@@ -2,6 +2,7 @@ package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.entity.User;
 import at.technikum.apps.mtcg.entity.UserData;
+import at.technikum.apps.mtcg.repository.UserRepository;
 import at.technikum.apps.mtcg.service.UserService;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
@@ -16,7 +17,7 @@ import java.util.Optional;
 
 public class UserController extends Controller {
 
-    private final UserService userService = new UserService();
+    private final UserService userService = new UserService(new UserRepository());
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
