@@ -8,7 +8,12 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class SessionService {
-    private final UserRepository userRepository = new UserRepository();
+    private final UserRepository userRepository;
+
+    public SessionService(UserRepository userRepository)
+    {
+        this.userRepository = userRepository;
+    }
 
     public Optional<Token> getToken(User userFromRequest) throws SQLException {
         Optional<User> userFromDB = userRepository.findUserByUsername(userFromRequest.Username());

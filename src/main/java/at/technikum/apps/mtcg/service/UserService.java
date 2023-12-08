@@ -8,8 +8,15 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public class UserService {
-    private final UserRepository userRepository = new UserRepository();
+public class UserService
+{
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository)
+    {
+        this.userRepository = userRepository;
+    }
+
     public List<User> findAll() throws SQLException
     {
         return userRepository.findAll();
@@ -30,7 +37,8 @@ public class UserService {
         return userRepository.findUserDataByUsername(username);
     }
 
-    public void updateUserDataByUsername(String username, UserData userData) throws SQLException {
+    public void updateUserDataByUsername(String username, UserData userData) throws SQLException
+    {
         userRepository.updateUserDataByUsername(username, userData);
     }
 }
