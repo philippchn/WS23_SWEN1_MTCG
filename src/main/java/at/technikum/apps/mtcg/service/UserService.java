@@ -37,7 +37,8 @@ public class UserService
         return userRepository.findUserDataByUsername(username);
     }
 
-    public void updateUserDataByUsername(String username, UserData userData) throws SQLException {
+    public void updateUserDataByUsername(String username, UserData userData) throws SQLException
+    {
         userRepository.updateUserDataByUsername(username, userData);
     }
 }
