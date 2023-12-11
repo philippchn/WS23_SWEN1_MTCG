@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class UserDatabase {
+public class MTCGDatabase {
 
-    private static final String URL = "jdbc:postgresql://localhost:5432/userdb";
+    private static final String URL = "jdbc:postgresql://localhost:5432/mtcgdb";
     private static final String USERNAME = "postgres";
     private static final String PASSWORD = "postgres";
 
