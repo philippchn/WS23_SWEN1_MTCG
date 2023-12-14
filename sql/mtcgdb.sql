@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS t_package (
     cardId_2 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
     cardId_3 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
     cardId_4 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_5 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL
+    cardId_5 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
+    available BOOLEAN DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS t_userToPackage (
