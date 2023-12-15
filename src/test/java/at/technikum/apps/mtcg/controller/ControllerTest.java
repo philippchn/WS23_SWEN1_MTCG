@@ -11,8 +11,12 @@ class ControllerTest {
     void supports() {
         Controller sessionController = new SessionController();
         Controller userController = new UserController();
+        Controller transactionController = new TransactionController();
+        Controller packageController = new PackageController();
 
         assertTrue(sessionController.supports("/sessions"));
         assertTrue(userController.supports("/users"));
+        assertTrue(transactionController.supports("/transactions"));
+        assertTrue(packageController.supports("/packages"));
     }
 }

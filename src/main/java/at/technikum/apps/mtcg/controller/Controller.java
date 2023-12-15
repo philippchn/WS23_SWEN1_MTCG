@@ -38,7 +38,7 @@ public abstract class Controller {
      * You can specify the body of the status code the user receives.
      * Content Type is JSON by default.
      */
-    protected Response statusCustomBody(HttpStatus httpStatus, String body)
+    protected Response statusJsonBody(HttpStatus httpStatus, String body)
     {
         Response response = new Response();
         response.setStatus(httpStatus);
