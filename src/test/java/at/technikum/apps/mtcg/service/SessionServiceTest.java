@@ -18,11 +18,11 @@ class SessionServiceTest
     void getToken() throws SQLException
     {
         //given
-        UserRepository userRepository = mock(UserRepository.class);
-        SessionService sessionService = new SessionService(userRepository);
+        UserRepository userRepositoryMock = mock(UserRepository.class);
+        SessionService sessionService = new SessionService(userRepositoryMock);
         User user = new User("Name", "Password");
 
-        when(userRepository.findUserByUsername("Name")).thenReturn(Optional.of(user));
+        when(userRepositoryMock.findUserByUsername("Name")).thenReturn(Optional.of(user));
 
         //when
         Optional<Token> token = sessionService.getToken(user);
@@ -30,6 +30,6 @@ class SessionServiceTest
         //then
         assertTrue(token.isPresent());
         assertEquals("Name-mtcgToken", token.get().token());
-        verify(userRepository).findUserByUsername("Name");
+        verify(userRepositoryMock).findUserByUsername("Name");
     }
 }
