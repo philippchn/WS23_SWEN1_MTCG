@@ -50,26 +50,16 @@ public class UserController extends Controller {
         }
     }
 
-    private User jsonToUserObject(Request request) throws JsonProcessingException
-    {
-        return objectMapper.readValue(request.getBody(), User.class);
-    }
-
-    private UserData jsonToUserDataObject(Request request) throws JsonProcessingException
-    {
-        return objectMapper.readValue(request.getBody(), UserData.class);
-    }
-
     private Response create(Request request)
     {
         User user;
         try
         {
-            user = jsonToUserObject(request);
+            user = objectMapper.readValue(request.getBody(), User.class);
         }
         catch (JsonProcessingException e)
         {
-            return statusCustomBody(HttpStatus.BAD_REQUEST, "JSON invalid");
+            return status(HttpStatus.BAD_REQUEST);
         }
 
         try
@@ -82,7 +72,7 @@ public class UserController extends Controller {
             {
                 return status(HttpStatus.CONFLICT);
             }
-            return statusCustomBody(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return status(HttpStatus.CREATED);
@@ -96,13 +86,9 @@ public class UserController extends Controller {
            users = userService.findAll();
            String usersJson = objectMapper.writeValueAsString(users);
 
-           return statusCustomBody(HttpStatus.OK, usersJson);
+           return statusJsonBody(HttpStatus.OK, usersJson);
         }
-        catch (SQLException e)
-        {
-            return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-        catch(JsonProcessingException e)
+        catch (SQLException | JsonProcessingException e)
         {
             return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -123,12 +109,12 @@ public class UserController extends Controller {
         }
         catch (SQLException e)
         {
-            return statusCustomBody(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         if (userData.isEmpty())
         {
-            return statusCustomBody(HttpStatus.NOT_FOUND, "User not found");
+            return status(HttpStatus.NOT_FOUND);
         }
         String userJson;
         try
@@ -139,25 +125,25 @@ public class UserController extends Controller {
         {
             return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return statusCustomBody(HttpStatus.OK, userJson);
+        return statusJsonBody(HttpStatus.OK, userJson);
     }
 
     private Response updateUser(Request request)
     {
-        UserData userData;
-        try
-        {
-            userData = jsonToUserDataObject(request);
-        }
-        catch (JsonProcessingException e)
-        {
-            return statusCustomBody(HttpStatus.BAD_REQUEST, "JSON invalid");
-        }
-
         String username = request.getRoute().replace("/users/", "");
         if (AuthorizationTokenHelper.invalidToken(request, username))
         {
             return status(HttpStatus.UNAUTHORIZED);
+        }
+
+        UserData userData;
+        try
+        {
+            userData = objectMapper.readValue(request.getBody(), UserData.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            return status(HttpStatus.BAD_REQUEST);
         }
 
         try
@@ -168,9 +154,9 @@ public class UserController extends Controller {
         {
             if (e.getSQLState().equals("23503"))
             {
-                return statusCustomBody(HttpStatus.NOT_FOUND, "User not found");
+                return status(HttpStatus.NOT_FOUND);
             }
-            return statusCustomBody(HttpStatus.BAD_REQUEST, e.getMessage());
+            return status(HttpStatus.BAD_REQUEST);
         }
         return status(HttpStatus.OK);
     }
@@ -183,7 +169,7 @@ public class UserController extends Controller {
         }
         catch (SQLException e)
         {
-            return statusCustomBody(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return status(HttpStatus.OK);
     }

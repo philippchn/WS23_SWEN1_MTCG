@@ -85,7 +85,7 @@ public class TransactionController extends Controller
             return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return statusCustomBody(HttpStatus.OK, cardsJson);
+        return statusJsonBody(HttpStatus.OK, cardsJson);
     }
 
     private String cardsToJson(List<RequestCard> cards) throws JsonProcessingException {

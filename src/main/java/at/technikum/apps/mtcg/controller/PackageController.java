@@ -56,12 +56,12 @@ public class PackageController extends Controller
             requestCards = objectMapper.readValue(request.getBody(), RequestCard[].class);
             if (requestCards.length != 5)
             {
-                return statusCustomBody(HttpStatus.BAD_REQUEST, "JSON invalid");
+                return status(HttpStatus.BAD_REQUEST);
             }
         }
         catch (JsonProcessingException e)
         {
-            return statusCustomBody(HttpStatus.BAD_REQUEST, "JSON invalid");
+            return status(HttpStatus.BAD_REQUEST);
         }
 
         try
@@ -78,7 +78,7 @@ public class PackageController extends Controller
         }
         catch (IllegalArgumentException e)
         {
-            return statusCustomBody(HttpStatus.BAD_REQUEST, "A name is invalid");
+            return status(HttpStatus.BAD_REQUEST);
         }
 
         return status(HttpStatus.CREATED);

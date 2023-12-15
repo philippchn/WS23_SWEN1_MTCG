@@ -53,7 +53,7 @@ public class SessionController extends Controller {
         }
         catch (JsonProcessingException e)
         {
-            return statusCustomBody(HttpStatus.BAD_REQUEST, "JSON invalid");
+            return status(HttpStatus.BAD_REQUEST);
         }
 
         Optional<Token> token;
@@ -63,12 +63,12 @@ public class SessionController extends Controller {
         }
         catch (SQLException e)
         {
-            return statusCustomBody(HttpStatus.NOT_FOUND, "User not found");
+            return status(HttpStatus.NOT_FOUND);
         }
 
         if (token.isEmpty())
         {
-            return statusCustomBody(HttpStatus.UNAUTHORIZED, "Invalid username/password provided");
+            return status(HttpStatus.UNAUTHORIZED);
         }
 
         String tokenJson;
@@ -80,7 +80,7 @@ public class SessionController extends Controller {
         {
             return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return statusCustomBody(HttpStatus.OK, tokenJson);
+        return statusJsonBody(HttpStatus.OK, tokenJson);
     }
 
 }
