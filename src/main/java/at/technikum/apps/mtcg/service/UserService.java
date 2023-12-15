@@ -22,9 +22,14 @@ public class UserService
         return userRepository.findAll();
     }
 
+    public Optional<User> findUserByUsername(String username) throws SQLException
+    {
+        return userRepository.findUserByUsername(username);
+    }
+
     public void save(User user) throws SQLException
     {
-        userRepository.save(user);
+        userRepository.saveUser(user);
     }
 
     public void deleteAll() throws SQLException
@@ -40,5 +45,14 @@ public class UserService
     public void updateUserDataByUsername(String username, UserData userData) throws SQLException
     {
         userRepository.updateUserDataByUsername(username, userData);
+    }
+
+    public int getCoins(String username) throws SQLException
+    {
+        return userRepository.getCoins(username);
+    }
+
+    public void takeFiveCoins(String username) throws SQLException {
+        userRepository.takeFiveCoins(username);
     }
 }

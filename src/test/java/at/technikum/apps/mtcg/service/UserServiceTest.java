@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.AdditionalAnswers.*;
 import static org.mockito.Mockito.*;
 
 class UserServiceTest
@@ -22,13 +21,13 @@ class UserServiceTest
         UserService userService = new UserService(userRepository);
         User user = new User("Name", "Password");
 
-        doNothing().when(userRepository).save(user);
+        doNothing().when(userRepository).saveUser(user);
 
         //when
         userService.save(user);
 
         //then
-        verify(userRepository).save(new User("Name", "Password"));
+        verify(userRepository).saveUser(new User("Name", "Password"));
     }
 
     @Test

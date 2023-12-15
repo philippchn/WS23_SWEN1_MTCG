@@ -3,6 +3,7 @@ package at.technikum.apps.mtcg.controller;
 import at.technikum.apps.mtcg.entity.card.RequestCard;
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.PackageRepository;
+import at.technikum.apps.mtcg.repository.UserRepository;
 import at.technikum.apps.mtcg.service.PackageService;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
@@ -15,7 +16,7 @@ import java.sql.SQLException;
 public class PackageController extends Controller
 {
 
-    private final PackageService packageService = new PackageService(new PackageRepository(), new CardRepository());
+    private final PackageService packageService = new PackageService(new PackageRepository(), new CardRepository(), new UserRepository());
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -40,6 +41,15 @@ public class PackageController extends Controller
 
     private Response createPackage(Request request)
     {
+        if (request.getAuthorizationToken().equals("INVALID"))
+        {
+            return status(HttpStatus.UNAUTHORIZED);
+        }
+        if (!AuthorizationTokenHelper.isAdmin(request))
+        {
+            return status(HttpStatus.FORBIDDEN);
+        }
+
         RequestCard[] requestCards;
         try
         {
@@ -60,6 +70,10 @@ public class PackageController extends Controller
         }
         catch (SQLException e)
         {
+            if (e.getSQLState().equals("23505"))
+            {
+                return status(HttpStatus.CONFLICT);
+            }
             return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         catch (IllegalArgumentException e)
@@ -67,6 +81,6 @@ public class PackageController extends Controller
             return statusCustomBody(HttpStatus.BAD_REQUEST, "A name is invalid");
         }
 
-        return status(HttpStatus.OK);
+        return status(HttpStatus.CREATED);
     }
 }
