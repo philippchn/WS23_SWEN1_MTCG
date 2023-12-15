@@ -60,19 +60,6 @@ public class UserController extends Controller {
         return objectMapper.readValue(request.getBody(), UserData.class);
     }
 
-    private boolean invalidToken(Request request, String username)
-    {
-        if (request.getAuthorizationToken().equals("admin-mtcgToken"))
-        {
-            return false;
-        }
-        if (request.getAuthorizationToken().equals(username + "-mtcgToken"))
-        {
-            return false;
-        }
-        return true;
-    }
-
     private Response create(Request request)
     {
         User user;
@@ -124,7 +111,7 @@ public class UserController extends Controller {
     private Response getUserDataByUsername(Request request)
     {
         String username = request.getRoute().replace("/users/", "");
-        if (invalidToken(request, username))
+        if (AuthorizationHelper.invalidToken(request, username))
         {
             return status(HttpStatus.UNAUTHORIZED);
         }
@@ -168,7 +155,7 @@ public class UserController extends Controller {
         }
 
         String username = request.getRoute().replace("/users/", "");
-        if (invalidToken(request, username))
+        if (AuthorizationHelper.invalidToken(request, username))
         {
             return status(HttpStatus.UNAUTHORIZED);
         }
