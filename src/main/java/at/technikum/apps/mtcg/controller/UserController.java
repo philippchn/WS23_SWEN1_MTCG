@@ -97,7 +97,11 @@ public class UserController extends Controller {
     private Response getUserDataByUsername(Request request)
     {
         String username = request.getRoute().replace("/users/", "");
-        if (AuthorizationTokenHelper.invalidToken(request, username))
+        if (AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
+        {
+            return status(HttpStatus.UNAUTHORIZED);
+        }
+        if (AuthorizationTokenHelper.invalidToken(request))
         {
             return status(HttpStatus.UNAUTHORIZED);
         }
@@ -131,10 +135,15 @@ public class UserController extends Controller {
     private Response updateUser(Request request)
     {
         String username = request.getRoute().replace("/users/", "");
-        if (AuthorizationTokenHelper.invalidToken(request, username))
+        if (AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
         {
             return status(HttpStatus.UNAUTHORIZED);
         }
+        if (AuthorizationTokenHelper.invalidToken(request))
+        {
+            return status(HttpStatus.UNAUTHORIZED);
+        }
+
 
         UserData userData;
         try

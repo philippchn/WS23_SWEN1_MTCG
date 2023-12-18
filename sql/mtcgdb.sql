@@ -5,6 +5,7 @@ CREATE DATABASE mtcgdb;
 CREATE TABLE IF NOT EXISTS t_user (
     username VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255) NOT NULL,
+    token VARCHAR(255) DEFAULT NULL,
     coins INT DEFAULT 20
 );
 

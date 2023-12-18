@@ -21,15 +21,18 @@ class SessionServiceTest
         UserRepository userRepositoryMock = mock(UserRepository.class);
         SessionService sessionService = new SessionService(userRepositoryMock);
         User user = new User("Name", "Password");
+        Token token = new Token("Name-mtcgToken");
 
         when(userRepositoryMock.findUserByUsername("Name")).thenReturn(Optional.of(user));
+        when(userRepositoryMock.getTokenOfUser("Name")).thenReturn(Optional.of(token));
+        doNothing().when(userRepositoryMock).loginUser("Name");
 
         //when
-        Optional<Token> token = sessionService.getToken(user);
+        Optional<Token> resultToken = sessionService.loginUser(user);
 
         //then
-        assertTrue(token.isPresent());
-        assertEquals("Name-mtcgToken", token.get().token());
+        assertTrue(resultToken.isPresent());
+        assertEquals("Name-mtcgToken", resultToken.get().token());
         verify(userRepositoryMock).findUserByUsername("Name");
     }
 }

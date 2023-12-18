@@ -1,6 +1,7 @@
 package at.technikum.apps.mtcg.repository;
 
 import at.technikum.apps.mtcg.data.MTCGDatabase;
+import at.technikum.apps.mtcg.entity.Token;
 import at.technikum.apps.mtcg.entity.User;
 import at.technikum.apps.mtcg.entity.UserData;
 
@@ -30,6 +31,10 @@ public class UserRepository{
 
     private final String UPDATE_USERDATA_BY_USERNAME = "INSERT INTO t_userdata (username, name, bio, image) VALUES (?, ?, ?, ?) " +
             "ON CONFLICT (username) DO UPDATE SET name = EXCLUDED.name, bio = EXCLUDED.bio, image = EXCLUDED.image";
+
+    private final String LOGIN_USER = "UPDATE t_user SET token = ? WHERE username = ?";
+
+    private final String GET_TOKEN = "SELECT token FROM t_user WHERE username = ?";
 
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
@@ -82,7 +87,8 @@ public class UserRepository{
         }
     }
 
-    public Optional<UserData> findUserDataByUsername(String username) throws SQLException {
+    public Optional<UserData> findUserDataByUsername(String username) throws SQLException
+    {
         Connection con = MTCGDatabase.getConnection();
         PreparedStatement pstmt = con.prepareStatement(GET_USERDATA_BY_USERNAME);
         pstmt.setString(1, username);
@@ -103,7 +109,8 @@ public class UserRepository{
         }
     }
 
-    public void updateUserDataByUsername(String username, UserData userData) throws SQLException {
+    public void updateUserDataByUsername(String username, UserData userData) throws SQLException
+    {
         Connection con = MTCGDatabase.getConnection();
         PreparedStatement pstmt = con.prepareStatement(UPDATE_USERDATA_BY_USERNAME);
         pstmt.setString(1, username);
@@ -125,12 +132,38 @@ public class UserRepository{
         return rs.getInt("coins");
     }
 
-    public void takeFiveCoins(String username) throws SQLException {
+    public void takeFiveCoins(String username) throws SQLException
+    {
         Connection con = MTCGDatabase.getConnection();
         PreparedStatement pstmt = con.prepareStatement(TAKE_FIVE_COINS_FROM_USER);
 
         pstmt.setString(1, username);
         pstmt.execute();
+    }
+
+    public void loginUser(String username) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(LOGIN_USER);
+
+        pstmt.setString(1, username + "-mtcgToken");
+        pstmt.setString(2, username);
+        pstmt.execute();
+    }
+
+    public Optional<Token> getTokenOfUser(String username) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(GET_TOKEN);
+
+        pstmt.setString(1, username);
+
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next())
+        {
+            return Optional.of(new Token(rs.getString("token")));
+        }
+        return Optional.empty();
     }
 
     public void deleteAll() throws SQLException

@@ -52,15 +52,13 @@ public class TransactionController extends Controller
         }
 
         String username = AuthorizationTokenHelper.getUsernameFromToken(request);
-        Optional<User> user;
         int coins;
         List<RequestCard> acquiredCards;
         String cardsJson;
 
         try
         {
-            user = userService.findUserByUsername(username);
-            if (user.isEmpty())
+            if (AuthorizationTokenHelper.invalidToken(request))
             {
                 return status(HttpStatus.UNAUTHORIZED);
             }
@@ -88,7 +86,8 @@ public class TransactionController extends Controller
         return statusJsonBody(HttpStatus.OK, cardsJson);
     }
 
-    private String cardsToJson(List<RequestCard> cards) throws JsonProcessingException {
+    private String cardsToJson(List<RequestCard> cards) throws JsonProcessingException
+    {
         StringBuilder cardsJson = new StringBuilder().append("[\n");
         for (RequestCard s : cards)
         {
