@@ -1,5 +1,6 @@
 package at.technikum.apps.mtcg.service;
 
+import at.technikum.apps.mtcg.entity.Token;
 import at.technikum.apps.mtcg.entity.User;
 import at.technikum.apps.mtcg.entity.UserData;
 import at.technikum.apps.mtcg.repository.UserRepository;
@@ -52,7 +53,8 @@ public class UserService
         return userRepository.getCoins(username);
     }
 
-    public void takeFiveCoins(String username) throws SQLException {
+    public void takeFiveCoins(String username) throws SQLException
+    {
         userRepository.takeFiveCoins(username);
     }
 }

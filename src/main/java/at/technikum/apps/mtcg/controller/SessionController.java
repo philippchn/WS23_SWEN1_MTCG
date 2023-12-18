@@ -31,7 +31,7 @@ public class SessionController extends Controller {
 
         if (request.getRoute().equals("/sessions")) {
             return switch (request.getMethod()) {
-                case "POST" ->  getToken(request);
+                case "POST" ->  loginUser(request);
                 default ->
                         status(HttpStatus.METHOD_NOT_ALLOWED);
             };
@@ -40,16 +40,12 @@ public class SessionController extends Controller {
         return response;
     }
 
-    private User jsonToUserRequest(Request request) throws JsonProcessingException {
-        return objectMapper.readValue(request.getBody(), User.class);
-    }
-
-    private Response getToken(Request request)
+    private Response loginUser(Request request)
     {
         User user;
         try
         {
-            user = jsonToUserRequest(request);
+            user = objectMapper.readValue(request.getBody(), User.class);
         }
         catch (JsonProcessingException e)
         {
@@ -59,7 +55,7 @@ public class SessionController extends Controller {
         Optional<Token> token;
         try
         {
-            token = sessionService.getToken(user);
+            token = sessionService.loginUser(user);
         }
         catch (SQLException e)
         {

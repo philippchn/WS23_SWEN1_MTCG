@@ -15,7 +15,8 @@ public class SessionService {
         this.userRepository = userRepository;
     }
 
-    public Optional<Token> getToken(User userFromRequest) throws SQLException {
+    public Optional<Token> loginUser(User userFromRequest) throws SQLException
+    {
         Optional<User> userFromDB = userRepository.findUserByUsername(userFromRequest.Username());
 
         if (userFromDB.isEmpty())
@@ -23,20 +24,21 @@ public class SessionService {
             return Optional.empty();
         }
 
-        if (checkPassword(userFromDB.get(), userFromRequest.Password()))
+        if (userFromDB.get().Password().equals(userFromRequest.Password()))
         {
-            return Optional.ofNullable(generateToken(userFromDB.get()));
+            loginUser(userFromDB.get().Username());
+            return getTokenOfUser(userFromDB.get().Username());
         }
         return Optional.empty();
     }
 
-    boolean checkPassword(User user, String password)
+    public void loginUser(String username) throws SQLException
     {
-        return user.Password().equals(password);
+        userRepository.loginUser(username);
     }
 
-    Token generateToken(User user)
+    public Optional<Token> getTokenOfUser(String username) throws SQLException
     {
-        return new Token(user.Username() + "-mtcgToken");
+        return userRepository.getTokenOfUser(username);
     }
 }
