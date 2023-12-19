@@ -19,6 +19,8 @@ public class PackageRepository
     private final String SET_PACKAGE_UNAVAILABLE = "UPDATE t_package SET available = false WHERE packageId = ?";
     private final String GET_CARDIDS_FROM_PACKAGE = "SELECT cardid_1, cardid_2, cardid_3, cardid_4, cardid_5 FROM t_package WHERE packageid = ?";
     private final String GET_CARD_FROM_ID = "SELECT cardid, name, damage FROM t_card WHERE cardid = ?";
+    private final String DELETE_ALL_USERTOPACKAGE = "DELETE FROM t_usertopackage";
+    private final String DELETE_ALL_PACKAGE = "DELETE FROM t_package";
 
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
@@ -91,5 +93,15 @@ public class PackageRepository
             cards.add(new RequestCard(rsCard.getString("cardid"), rsCard.getString("name"), rsCard.getInt("damage")));
         }
         return cards;
+    }
+
+    public void deleteAll() throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement deleteUserToPackage = con.prepareStatement(DELETE_ALL_USERTOPACKAGE);
+        PreparedStatement deletePackage = con.prepareStatement(DELETE_ALL_PACKAGE);
+
+        deleteUserToPackage.execute();
+        deletePackage.execute();
     }
 }

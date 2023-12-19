@@ -54,4 +54,9 @@ public class PackageService
         packageRepository.buyPackage(username, randomPackageId);
         return packageRepository.getCardsFromPackage(randomPackageId);
     }
+
+    public void deleteAll() throws SQLException
+    {
+        packageRepository.deleteAll();
+    }
 }
