@@ -34,7 +34,6 @@ public class UserController extends Controller {
             return switch (request.getMethod()) {
                 case "POST" -> create(request);
                 case "GET" -> readAll();
-                case "DELETE" -> deleteAll();
                 default ->
                         status(HttpStatus.METHOD_NOT_ALLOWED);
             };
@@ -166,19 +165,6 @@ public class UserController extends Controller {
                 return status(HttpStatus.NOT_FOUND);
             }
             return status(HttpStatus.BAD_REQUEST);
-        }
-        return status(HttpStatus.OK);
-    }
-
-    private Response deleteAll()
-    {
-        try
-        {
-            userService.deleteAll();
-        }
-        catch (SQLException e)
-        {
-            return status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return status(HttpStatus.OK);
     }
