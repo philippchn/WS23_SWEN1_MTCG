@@ -1,5 +1,9 @@
 @echo off
 
+echo delete all
+curl -X DELETE http://localhost:10001/delete
+echo.
+
 REM --------------------------------------------------
 REM Monster Trading Cards Game
 REM --------------------------------------------------

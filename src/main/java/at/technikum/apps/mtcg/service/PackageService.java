@@ -6,10 +6,8 @@ import at.technikum.apps.mtcg.entity.card.DBCard;
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.PackageRepository;
 import at.technikum.apps.mtcg.repository.UserRepository;
-import at.technikum.server.http.Response;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -42,17 +40,15 @@ public class PackageService
         return new DBCard(requestCard.Id(), requestCard.Name(), requestCard.Damage(), cardType.isMonster(), cardType.getElementType().toString());
     }
 
-    public List<RequestCard> getRandomPackage(String username) throws SQLException
+    public List<RequestCard> buyPackage(String username) throws SQLException
     {
         List<Integer> ids = packageRepository.getAllAvailablePackageId();
         if (ids.isEmpty())
         {
             return Collections.emptyList();
         }
-        int randomIndex = new Random().nextInt(ids.size());
-        int randomPackageId = ids.get(randomIndex);
-        packageRepository.buyPackage(username, randomPackageId);
-        return packageRepository.getCardsFromPackage(randomPackageId);
+        packageRepository.buyPackage(username, ids.get(0));
+        return packageRepository.getCardsFromPackage(ids.get(0));
     }
 
     public void deleteAll() throws SQLException

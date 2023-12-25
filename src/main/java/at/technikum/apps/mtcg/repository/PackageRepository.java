@@ -15,11 +15,10 @@ public class PackageRepository
     private final String CREATE_PACKAGE = "INSERT INTO t_package (cardid_1, cardid_2, cardid_3, cardid_4, cardid_5) VALUES (?,?,?,?,?)";
 
     private final String GET_ALL_AVAILABLE_PACKAGEID = "SELECT packageId FROM t_package WHERE available = true;";
-    private final String CREATE_USERTOPACKAGE = "INSERT INTO t_usertopackage (username, packageid) VALUES (?,?);";
     private final String SET_PACKAGE_UNAVAILABLE = "UPDATE t_package SET available = false WHERE packageId = ?";
     private final String GET_CARDIDS_FROM_PACKAGE = "SELECT cardid_1, cardid_2, cardid_3, cardid_4, cardid_5 FROM t_package WHERE packageid = ?";
     private final String GET_CARD_FROM_ID = "SELECT cardid, name, damage FROM t_card WHERE cardid = ?";
-    private final String DELETE_ALL_USERTOPACKAGE = "DELETE FROM t_usertopackage";
+    private final String SET_CARD_OWNER = "UPDATE t_card SET owner = ? WHERE cardid = ?";
     private final String DELETE_ALL_PACKAGE = "DELETE FROM t_package";
 
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
@@ -53,14 +52,17 @@ public class PackageRepository
     }
 
     public void buyPackage(String username, int packageId) throws SQLException {
+        List<RequestCard> cards = getCardsFromPackage(packageId);
+
         Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(CREATE_USERTOPACKAGE);
+        PreparedStatement pstmt = con.prepareStatement(SET_CARD_OWNER);
+        for (RequestCard c : cards)
+        {
+            pstmt.setString(1, username);
+            pstmt.setString(2, c.Id());
 
-        pstmt.setString(1, username);
-        pstmt.setInt(2, packageId);
-
-        pstmt.execute();
-
+            pstmt.execute();
+        }
         PreparedStatement pstmt2 = con.prepareStatement(SET_PACKAGE_UNAVAILABLE);
         pstmt2.setInt(1, packageId);
 
@@ -98,10 +100,8 @@ public class PackageRepository
     public void deleteAll() throws SQLException
     {
         Connection con = MTCGDatabase.getConnection();
-        PreparedStatement deleteUserToPackage = con.prepareStatement(DELETE_ALL_USERTOPACKAGE);
         PreparedStatement deletePackage = con.prepareStatement(DELETE_ALL_PACKAGE);
 
-        deleteUserToPackage.execute();
         deletePackage.execute();
     }
 }

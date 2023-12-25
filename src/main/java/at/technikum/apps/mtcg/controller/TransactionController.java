@@ -1,6 +1,5 @@
 package at.technikum.apps.mtcg.controller;
 
-import at.technikum.apps.mtcg.entity.User;
 import at.technikum.apps.mtcg.entity.card.RequestCard;
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.PackageRepository;
@@ -15,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 public class TransactionController extends Controller
 {
@@ -69,7 +67,7 @@ public class TransactionController extends Controller
                 return status(HttpStatus.FORBIDDEN);
             }
 
-            acquiredCards = packageService.getRandomPackage(username);
+            acquiredCards = packageService.buyPackage(username);
             if(acquiredCards.isEmpty())
             {
                 return status(HttpStatus.NOT_FOUND);

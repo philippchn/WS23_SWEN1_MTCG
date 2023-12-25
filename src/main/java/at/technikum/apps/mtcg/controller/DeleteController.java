@@ -29,8 +29,8 @@ public class DeleteController extends Controller
         try
         {
             packageService.deleteAll();
-            userService.deleteAll();
             cardService.deleteAll();
+            userService.deleteAll();
         }
         catch (SQLException e)
         {
