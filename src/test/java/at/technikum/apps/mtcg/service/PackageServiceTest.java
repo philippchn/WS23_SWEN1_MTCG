@@ -6,9 +6,7 @@ import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.PackageRepository;
 import at.technikum.apps.mtcg.repository.UserRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
-import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +43,7 @@ class PackageServiceTest
     }
 
     @Test
-    void getRandomPackage() throws SQLException {
+    void getPackage() throws SQLException {
         //given
         PackageRepository packageRepositoryMock = mock(PackageRepository.class);
         CardRepository cardRepositoryMock = mock(CardRepository.class);
@@ -64,7 +62,7 @@ class PackageServiceTest
         when(packageRepositoryMock.getCardsFromPackage(anyInt())).thenReturn(requestCards);
 
         //when
-        List<RequestCard> result = packageService.getRandomPackage("username");
+        List<RequestCard> result = packageService.buyPackage("username");
 
         //then
         assertEquals(result, requestCards);
