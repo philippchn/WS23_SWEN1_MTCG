@@ -34,6 +34,7 @@ public class PackageRepository
         pstmt.setString(4, requestCards[3].Id());
         pstmt.setString(5, requestCards[4].Id());
         pstmt.execute();
+        con.close();
     }
 
     public List<Integer> getAllAvailablePackageId() throws SQLException
@@ -42,6 +43,7 @@ public class PackageRepository
         PreparedStatement pstmt = con.prepareStatement(GET_ALL_AVAILABLE_PACKAGEID);
 
         ResultSet rs = pstmt.executeQuery();
+        con.close();
 
         List<Integer> packageIds = new ArrayList<>();
         while (rs.next())
@@ -67,6 +69,7 @@ public class PackageRepository
         pstmt2.setInt(1, packageId);
 
         pstmt2.execute();
+        con.close();
     }
 
     public List<RequestCard> getCardsFromPackage(int packageId) throws SQLException
@@ -94,6 +97,7 @@ public class PackageRepository
             rsCard.next();
             cards.add(new RequestCard(rsCard.getString("cardid"), rsCard.getString("name"), rsCard.getInt("damage")));
         }
+        con.close();
         return cards;
     }
 
@@ -103,5 +107,6 @@ public class PackageRepository
         PreparedStatement deletePackage = con.prepareStatement(DELETE_ALL_PACKAGE);
 
         deletePackage.execute();
+        con.close();
     }
 }

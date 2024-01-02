@@ -53,6 +53,7 @@ public class UserRepository{
             );
             users.add(user);
         }
+        con.close();
         return users;
     }
 
@@ -64,6 +65,7 @@ public class UserRepository{
         pstmt.setString(1, user.Username());
         pstmt.setString(2, user.Password());
         pstmt.execute();
+        con.close();
     }
 
     public Optional<User> findUserByUsername(String username) throws SQLException
@@ -73,7 +75,7 @@ public class UserRepository{
         pstmt.setString(1, username);
 
         ResultSet rs = pstmt.executeQuery();
-
+        con.close();
         if (rs.next())
         {
             return Optional.of(new User(
@@ -94,7 +96,7 @@ public class UserRepository{
         pstmt.setString(1, username);
 
         ResultSet rs = pstmt.executeQuery();
-
+        con.close();
         if (rs.next())
         {
             return Optional.of(new UserData(
@@ -118,6 +120,7 @@ public class UserRepository{
         pstmt.setString(3, userData.Bio());
         pstmt.setString(4, userData.Image());
         pstmt.execute();
+        con.close();
     }
 
     public int getCoins(String username) throws SQLException
@@ -129,6 +132,7 @@ public class UserRepository{
 
         ResultSet rs = pstmt.executeQuery();
         rs.next();
+        con.close();
         return rs.getInt("coins");
     }
 
@@ -139,6 +143,7 @@ public class UserRepository{
 
         pstmt.setString(1, username);
         pstmt.execute();
+        con.close();
     }
 
     public void loginUser(String username) throws SQLException
@@ -149,6 +154,7 @@ public class UserRepository{
         pstmt.setString(1, username + "-mtcgToken");
         pstmt.setString(2, username);
         pstmt.execute();
+        con.close();
     }
 
     public Optional<Token> getTokenOfUser(String username) throws SQLException
@@ -159,6 +165,7 @@ public class UserRepository{
         pstmt.setString(1, username);
 
         ResultSet rs = pstmt.executeQuery();
+        con.close();
         if (rs.next())
         {
             return Optional.of(new Token(rs.getString("token")));
@@ -175,5 +182,6 @@ public class UserRepository{
 
         PreparedStatement pstmt2 = con.prepareStatement(DELETE_ALL_FROM_USERTABLE);
         pstmt2.execute();
+        con.close();
     }
 }
