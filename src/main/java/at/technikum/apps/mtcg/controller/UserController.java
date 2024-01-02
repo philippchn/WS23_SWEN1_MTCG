@@ -19,8 +19,6 @@ import java.util.Optional;
 public class UserController extends Controller {
     private final NewUserService newUserService = new NewUserService(new UserRepository());
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
     public boolean supports(String route) {
         return route.startsWith("/users");
@@ -51,17 +49,7 @@ public class UserController extends Controller {
 
     private Response create(Request request)
     {
-        User user;
-        try
-        {
-            user = objectMapper.readValue(request.getBody(), User.class);
-        }
-        catch (JsonProcessingException e)
-        {
-            return status(HttpStatus.BAD_REQUEST);
-        }
-
-        return newUserService.create(user);
+        return newUserService.create(request);
     }
 
     private Response findAll()

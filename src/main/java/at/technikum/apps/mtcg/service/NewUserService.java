@@ -26,8 +26,18 @@ public class NewUserService
         this.userRepository = userRepository;
     }
 
-    public Response create(User user)
+    public Response create(Request request)
     {
+        User user;
+        try
+        {
+            user = objectMapper.readValue(request.getBody(), User.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseHelper.status(HttpStatus.BAD_REQUEST);
+        }
+
         try
         {
             userRepository.saveUser(user);
