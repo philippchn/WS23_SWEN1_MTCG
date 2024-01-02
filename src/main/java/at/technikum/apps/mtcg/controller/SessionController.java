@@ -3,7 +3,7 @@ package at.technikum.apps.mtcg.controller;
 import at.technikum.apps.mtcg.entity.Token;
 import at.technikum.apps.mtcg.entity.User;
 import at.technikum.apps.mtcg.repository.UserRepository;
-import at.technikum.apps.mtcg.service.SessionService;
+import at.technikum.apps.mtcg.service.NewSessionService;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
@@ -15,9 +15,7 @@ import java.util.Optional;
 
 public class SessionController extends Controller {
 
-    private final SessionService sessionService = new SessionService(new UserRepository());
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final NewSessionService newSessionService = new NewSessionService(new UserRepository());
 
     @Override
     public boolean supports(String route) {
@@ -42,41 +40,7 @@ public class SessionController extends Controller {
 
     private Response loginUser(Request request)
     {
-        User user;
-        try
-        {
-            user = objectMapper.readValue(request.getBody(), User.class);
-        }
-        catch (JsonProcessingException e)
-        {
-            return status(HttpStatus.BAD_REQUEST);
-        }
-
-        Optional<Token> token;
-        try
-        {
-            token = sessionService.loginUser(user);
-        }
-        catch (SQLException e)
-        {
-            return status(HttpStatus.NOT_FOUND);
-        }
-
-        if (token.isEmpty())
-        {
-            return status(HttpStatus.UNAUTHORIZED);
-        }
-
-        String tokenJson;
-        try
-        {
-            tokenJson = objectMapper.writeValueAsString(token.get());
-        }
-        catch (JsonProcessingException e)
-        {
-            return status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return statusJsonBody(HttpStatus.OK, tokenJson);
+        return newSessionService.loginUser(request);
     }
 
 }
