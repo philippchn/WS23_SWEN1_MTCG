@@ -1,60 +1,153 @@
 package at.technikum.apps.mtcg.service;
 
-import at.technikum.apps.mtcg.entity.Token;
 import at.technikum.apps.mtcg.entity.User;
 import at.technikum.apps.mtcg.entity.UserData;
 import at.technikum.apps.mtcg.repository.UserRepository;
+import at.technikum.server.http.HttpStatus;
+import at.technikum.server.http.Request;
+import at.technikum.server.http.Response;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class UserService
 {
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     public UserService(UserRepository userRepository)
     {
         this.userRepository = userRepository;
     }
 
-    public List<User> findAll() throws SQLException
+    public Response create(Request request)
     {
-        return userRepository.findAll();
+        User user;
+        try
+        {
+            user = objectMapper.readValue(request.getBody(), User.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseHelper.status(HttpStatus.BAD_REQUEST);
+        }
+
+        try
+        {
+            userRepository.saveUser(user);
+        }
+        catch (SQLException e)
+        {
+            if (Objects.equals(e.getSQLState(), "23505"))
+            {
+                return ResponseHelper.status(HttpStatus.CONFLICT);
+            }
+            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return ResponseHelper.status(HttpStatus.CREATED);
     }
 
-    public Optional<User> findUserByUsername(String username) throws SQLException
+    public Response findAll()
     {
-        return userRepository.findUserByUsername(username);
+        List<User> users;
+        try
+        {
+            users = userRepository.findAll();
+        }
+        catch (SQLException e)
+        {
+            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        try
+        {
+            String usersJson = objectMapper.writeValueAsString(users);
+            return ResponseHelper.statusJsonBody(HttpStatus.OK, usersJson);
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    public void save(User user) throws SQLException
+    public Response getUserDataByUsername(Request request)
     {
-        userRepository.saveUser(user);
+        String username = request.getRoute().replace("/users/", "");
+        if (AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
+        {
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
+        }
+        if (AuthorizationTokenHelper.invalidToken(request))
+        {
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<UserData> userData;
+        try
+        {
+            userData = userRepository.findUserDataByUsername(username);
+        }
+        catch (SQLException e)
+        {
+            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (userData.isEmpty())
+        {
+            return ResponseHelper.status(HttpStatus.NOT_FOUND);
+        }
+        String userJson;
+        try
+        {
+            userJson = objectMapper.writeValueAsString(userData.get());
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return ResponseHelper.statusJsonBody(HttpStatus.OK, userJson);
     }
 
-    public void deleteAll() throws SQLException
+    public Response updateUser(Request request)
     {
-        userRepository.deleteAll();
-    }
+        String username = request.getRoute().replace("/users/", "");
+        if (AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
+        {
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
+        }
+        if (AuthorizationTokenHelper.invalidToken(request))
+        {
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
+        }
 
-    public Optional<UserData> getUserDataByUsername(String username) throws SQLException
-    {
-        return userRepository.findUserDataByUsername(username);
-    }
 
-    public void updateUserDataByUsername(String username, UserData userData) throws SQLException
-    {
-        userRepository.updateUserDataByUsername(username, userData);
-    }
+        UserData userData;
+        try
+        {
+            userData = objectMapper.readValue(request.getBody(), UserData.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseHelper.status(HttpStatus.BAD_REQUEST);
+        }
 
-    public int getCoins(String username) throws SQLException
-    {
-        return userRepository.getCoins(username);
-    }
-
-    public void takeFiveCoins(String username) throws SQLException
-    {
-        userRepository.takeFiveCoins(username);
+        try
+        {
+            userRepository.updateUserDataByUsername(username, userData);
+        }
+        catch (SQLException e)
+        {
+            if (e.getSQLState().equals("23503"))
+            {
+                return ResponseHelper.status(HttpStatus.NOT_FOUND);
+            }
+            return ResponseHelper.status(HttpStatus.BAD_REQUEST);
+        }
+        return ResponseHelper.status(HttpStatus.OK);
     }
 }

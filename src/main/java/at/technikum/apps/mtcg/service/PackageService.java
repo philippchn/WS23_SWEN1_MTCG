@@ -1,59 +1,84 @@
 package at.technikum.apps.mtcg.service;
 
-import at.technikum.apps.mtcg.entity.card.RequestCard;
 import at.technikum.apps.mtcg.entity.card.CardType;
 import at.technikum.apps.mtcg.entity.card.DBCard;
+import at.technikum.apps.mtcg.entity.card.RequestCard;
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.PackageRepository;
-import at.technikum.apps.mtcg.repository.UserRepository;
+import at.technikum.server.http.HttpStatus;
+import at.technikum.server.http.Request;
+import at.technikum.server.http.Response;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 
-@Deprecated
 public class PackageService
 {
     private final PackageRepository packageRepository;
     private final CardRepository cardRepository;
-    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PackageService(PackageRepository packageRepository, CardRepository cardRepository, UserRepository userRepository)
+
+    public PackageService(PackageRepository packageRepository, CardRepository cardRepository)
     {
         this.packageRepository = packageRepository;
         this.cardRepository = cardRepository;
-        this.userRepository = userRepository;
     }
 
-    public void savePackage(RequestCard[] requestCards) throws SQLException
+    public Response createPackage(Request request)
     {
-        for (RequestCard requestCard : requestCards)
+        if (request.getAuthorizationToken().equals("INVALID"))
         {
-            cardRepository.saveCard(cardConverter(requestCard));
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
-        packageRepository.savePackage(requestCards);
+        if (!AuthorizationTokenHelper.isAdmin(request))
+        {
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
+        }
+
+
+        RequestCard[] requestCards;
+        try
+        {
+            requestCards = objectMapper.readValue(request.getBody(), RequestCard[].class);
+            if (requestCards.length != 5)
+            {
+                return ResponseHelper.status(HttpStatus.BAD_REQUEST);
+            }
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseHelper.status(HttpStatus.BAD_REQUEST);
+        }
+
+        try
+        {
+            for (RequestCard requestCard : requestCards)
+            {
+                cardRepository.saveCard(cardConverter(requestCard));
+            }
+            packageRepository.savePackage(requestCards);
+        }
+        catch (SQLException e)
+        {
+            if (e.getSQLState().equals("23505"))
+            {
+                return ResponseHelper.status(HttpStatus.CONFLICT);
+            }
+            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (IllegalArgumentException e)
+        {
+            return ResponseHelper.status(HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseHelper.status(HttpStatus.CREATED);
     }
 
     private DBCard cardConverter(RequestCard requestCard)
     {
         CardType cardType = CardType.createType(requestCard.Name());
         return new DBCard(requestCard.Id(), requestCard.Name(), requestCard.Damage(), cardType.isMonster(), cardType.getElementType().toString());
-    }
-
-    public List<RequestCard> buyPackage(String username) throws SQLException
-    {
-        List<Integer> ids = packageRepository.getAllAvailablePackageId();
-        if (ids.isEmpty())
-        {
-            return Collections.emptyList();
-        }
-        packageRepository.buyPackage(username, ids.get(0));
-        return packageRepository.getCardsFromPackage(ids.get(0));
-    }
-
-    public void deleteAll() throws SQLException
-    {
-        packageRepository.deleteAll();
     }
 }
