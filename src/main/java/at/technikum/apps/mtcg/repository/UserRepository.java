@@ -31,6 +31,7 @@ public class UserRepository{
     private final String GET_TOKEN = "SELECT token FROM t_user WHERE username = ?";
     private final String CREATE_EMPTY_USER_STATS = "INSERT INTO t_stats (name) VALUES (?)";
     private final String GET_USER_STATS = "SELECT * FROM t_stats WHERE name = ?";
+    private final String GET_ELO_SCOREBOARD = "SELECT * FROM t_stats ORDER BY elo DESC";
 
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
@@ -208,5 +209,25 @@ public class UserRepository{
             ));
         }
         return Optional.empty();
+    }
+
+    public List<UserStats> getEloScoreboard() throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(GET_ELO_SCOREBOARD);
+        ResultSet rs = pstmt.executeQuery();
+        con.close();
+
+        List<UserStats> users = new ArrayList<>();
+        while (rs.next())
+        {
+            users.add(new UserStats(
+                    rs.getString("name"),
+                    rs.getInt("elo"),
+                    rs.getInt("wins"),
+                    rs.getInt("losses")
+            ));
+        }
+        return users;
     }
 }
