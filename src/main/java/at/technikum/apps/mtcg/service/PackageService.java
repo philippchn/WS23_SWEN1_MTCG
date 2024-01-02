@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+@Deprecated
 public class PackageService
 {
     private final PackageRepository packageRepository;
