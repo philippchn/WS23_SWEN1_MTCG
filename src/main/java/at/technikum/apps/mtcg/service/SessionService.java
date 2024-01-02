@@ -12,13 +12,13 @@ import java.sql.SQLException;
 import java.util.Optional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class NewSessionService
+public class SessionService
 {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public NewSessionService(UserRepository userRepository)
+    public SessionService(UserRepository userRepository)
     {
         this.userRepository = userRepository;
     }
