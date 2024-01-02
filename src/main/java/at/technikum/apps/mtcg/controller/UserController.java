@@ -17,10 +17,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class UserController extends Controller {
-
-    @Deprecated
-    private final UserService userService = new UserService(new UserRepository());
-
     private final NewUserService newUserService = new NewUserService(new UserRepository());
 
     private final ObjectMapper objectMapper = new ObjectMapper();
