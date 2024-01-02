@@ -1,8 +1,6 @@
 package at.technikum.apps.mtcg.repository;
 
 import at.technikum.apps.mtcg.data.MTCGDatabase;
-import at.technikum.apps.mtcg.entity.User;
-import at.technikum.apps.mtcg.entity.UserData;
 import at.technikum.apps.mtcg.entity.card.DBCard;
 import at.technikum.apps.mtcg.entity.card.RequestCard;
 
@@ -11,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +42,7 @@ public class CardRepository
         pstmt.setBoolean(4, dbCard.isMonster());
         pstmt.setString(5, dbCard.elementType());
         pstmt.execute();
+        con.close();
     }
 
     public List<RequestCard> getAllCardsOfUser(String username) throws SQLException
@@ -65,7 +63,7 @@ public class CardRepository
                     rs.getInt("damage")
             ));
         }
-
+        con.close();
         return list;
     }
 
@@ -76,7 +74,7 @@ public class CardRepository
         pstmt.setString(1, cardId);
 
         ResultSet rs = pstmt.executeQuery();
-
+        con.close();
         if (rs.next())
         {
             return Optional.of(rs.getString("owner"));
@@ -94,6 +92,7 @@ public class CardRepository
         PreparedStatement pstmt = con.prepareStatement(DELETE_CARDS);
         pstmt.execute();
         pstmt2.execute();
+        con.close();
     }
 
     public void createDeck(String username, String[] ids) throws SQLException
@@ -107,6 +106,7 @@ public class CardRepository
         pstmt.setString(5, ids[3]);
 
         pstmt.execute();
+        con.close();
     }
 
     public List<RequestCard> getDeck(String username) throws SQLException
@@ -117,6 +117,8 @@ public class CardRepository
         pstmt.setString(1, username);
 
         ResultSet rs = pstmt.executeQuery();
+
+        con.close();
 
         while (rs.next())
         {
