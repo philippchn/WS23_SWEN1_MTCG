@@ -14,7 +14,8 @@ public class Server {
         this.app = app;
     }
 
-    public void start() {
+    public void start()
+    {
         try {
             server = new ServerSocket(10001);
         } catch (IOException e) {
@@ -28,7 +29,8 @@ public class Server {
                 Socket socket = server.accept();
 
                 RequestHandler handler = new RequestHandler(socket, app);
-                handler.handle();
+                Thread thread = new Thread(handler);
+                thread.start();
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
