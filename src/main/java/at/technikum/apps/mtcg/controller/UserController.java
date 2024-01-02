@@ -3,6 +3,7 @@ package at.technikum.apps.mtcg.controller;
 import at.technikum.apps.mtcg.entity.User;
 import at.technikum.apps.mtcg.entity.UserData;
 import at.technikum.apps.mtcg.repository.UserRepository;
+import at.technikum.apps.mtcg.service.NewUserService;
 import at.technikum.apps.mtcg.service.UserService;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
@@ -17,7 +18,10 @@ import java.util.Optional;
 
 public class UserController extends Controller {
 
+    @Deprecated
     private final UserService userService = new UserService(new UserRepository());
+
+    private final NewUserService newUserService = new NewUserService(new UserRepository());
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -33,7 +37,7 @@ public class UserController extends Controller {
         {
             return switch (request.getMethod()) {
                 case "POST" -> create(request);
-                case "GET" -> readAll();
+                case "GET" -> findAll();
                 default ->
                         status(HttpStatus.METHOD_NOT_ALLOWED);
             };
@@ -61,111 +65,21 @@ public class UserController extends Controller {
             return status(HttpStatus.BAD_REQUEST);
         }
 
-        try
-        {
-            userService.save(user);
-        }
-        catch (SQLException e)
-        {
-            if (Objects.equals(e.getSQLState(), "23505"))
-            {
-                return status(HttpStatus.CONFLICT);
-            }
-            return status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return status(HttpStatus.CREATED);
+        return newUserService.create(user);
     }
 
-    private Response readAll()
+    private Response findAll()
     {
-        List<User> users;
-        try
-        {
-           users = userService.findAll();
-           String usersJson = objectMapper.writeValueAsString(users);
-
-           return statusJsonBody(HttpStatus.OK, usersJson);
-        }
-        catch (SQLException | JsonProcessingException e)
-        {
-            return status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return newUserService.findAll();
     }
 
     private Response getUserDataByUsername(Request request)
     {
-        String username = request.getRoute().replace("/users/", "");
-        if (AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
-        {
-            return status(HttpStatus.UNAUTHORIZED);
-        }
-        if (AuthorizationTokenHelper.invalidToken(request))
-        {
-            return status(HttpStatus.UNAUTHORIZED);
-        }
-
-        Optional<UserData> userData;
-        try
-        {
-            userData = userService.getUserDataByUsername(username);
-        }
-        catch (SQLException e)
-        {
-            return status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        if (userData.isEmpty())
-        {
-            return status(HttpStatus.NOT_FOUND);
-        }
-        String userJson;
-        try
-        {
-            userJson = objectMapper.writeValueAsString(userData.get());
-        }
-        catch (JsonProcessingException e)
-        {
-            return status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return statusJsonBody(HttpStatus.OK, userJson);
+        return newUserService.getUserDataByUsername(request);
     }
 
     private Response updateUser(Request request)
     {
-        String username = request.getRoute().replace("/users/", "");
-        if (AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
-        {
-            return status(HttpStatus.UNAUTHORIZED);
-        }
-        if (AuthorizationTokenHelper.invalidToken(request))
-        {
-            return status(HttpStatus.UNAUTHORIZED);
-        }
-
-
-        UserData userData;
-        try
-        {
-            userData = objectMapper.readValue(request.getBody(), UserData.class);
-        }
-        catch (JsonProcessingException e)
-        {
-            return status(HttpStatus.BAD_REQUEST);
-        }
-
-        try
-        {
-            userService.updateUserDataByUsername(username, userData);
-        }
-        catch (SQLException e)
-        {
-            if (e.getSQLState().equals("23503"))
-            {
-                return status(HttpStatus.NOT_FOUND);
-            }
-            return status(HttpStatus.BAD_REQUEST);
-        }
-        return status(HttpStatus.OK);
+        return newUserService.updateUser(request);
     }
 }
