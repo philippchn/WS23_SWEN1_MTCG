@@ -29,6 +29,16 @@ public class CardRepository
                              td.cardId_4 = tc.cardId
             WHERE td.username = ?;
             """;
+
+    private final String GET_DETAIL_DECK = """
+            SELECT tc.cardId, tc.name, tc.damage, tc.monstertype, tc.elementtype
+            FROM t_deck td
+            JOIN t_card tc ON td.cardId_1 = tc.cardId OR
+                             td.cardId_2 = tc.cardId OR
+                             td.cardId_3 = tc.cardId OR
+                             td.cardId_4 = tc.cardId
+            WHERE td.username = ?;
+            """;
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
     public void saveCard(DBCard dbCard) throws SQLException
@@ -109,7 +119,7 @@ public class CardRepository
         con.close();
     }
 
-    public List<RequestCard> getDeck(String username) throws SQLException
+    public List<RequestCard> getSimpleDeck(String username) throws SQLException
     {
         List<RequestCard> result = new ArrayList<>();
         Connection con = MTCGDatabase.getConnection();
@@ -126,6 +136,30 @@ public class CardRepository
                     rs.getString("cardId"),
                     rs.getString("name"),
                     rs.getFloat("damage")
+            ));
+        }
+        return result;
+    }
+
+    public List<DBCard> getDetailDeck(String username) throws SQLException
+    {
+        List<DBCard> result = new ArrayList<>();
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(GET_DETAIL_DECK);
+        pstmt.setString(1, username);
+
+        ResultSet rs = pstmt.executeQuery();
+
+        con.close();
+
+        while (rs.next())
+        {
+            result.add(new DBCard(
+                    rs.getString("cardId"),
+                    rs.getString("name"),
+                    rs.getFloat("damage"),
+                    rs.getBoolean("monstertype"),
+                    rs.getString("elementtype")
             ));
         }
         return result;
