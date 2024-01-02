@@ -47,3 +47,10 @@ CREATE TABLE IF NOT EXISTS t_deck (
     cardId_3 varchar(255),
     cardId_4 varchar(255)
 );
+
+CREATE TABLE IF NOT EXISTS t_stats (
+    name varchar(255) PRIMARY KEY REFERENCES t_user(username),
+    elo INT DEFAULT 0,
+    wins INT DEFAULT 0,
+    losses INT DEFAULT 0
+)

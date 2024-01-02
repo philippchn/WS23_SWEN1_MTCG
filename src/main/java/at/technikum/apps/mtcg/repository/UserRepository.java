@@ -4,6 +4,7 @@ import at.technikum.apps.mtcg.data.MTCGDatabase;
 import at.technikum.apps.mtcg.entity.Token;
 import at.technikum.apps.mtcg.entity.User;
 import at.technikum.apps.mtcg.entity.UserData;
+import at.technikum.apps.mtcg.entity.UserStats;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,25 +17,20 @@ import java.util.Optional;
 public class UserRepository{
 
     private final String FIND_ALL_SQL = "SELECT * FROM t_user";
-
     private final String SAVE_SQL_USER = "INSERT INTO t_user (username, password) VALUES(?, ?)";
-
     private final String FIND_USER_BY_USERNAME = "SELECT * FROM t_user WHERE username = ?";
     private final String GET_COINS = "SELECT coins FROM t_user WHERE username = ?";
-
     private final String DELETE_ALL_FROM_USERTABLE = "DELETE FROM t_user";
-
     private final String DELETE_ALL_FROM_USERDATATABLE = "DELETE FROM t_userdata";
-
+    private final String DELETE_ALL_FROM_STATSTABLE = "DELETE FROM t_stats";
     private final String GET_USERDATA_BY_USERNAME = "SELECT * FROM t_userdata WHERE username = ?";
     private final String TAKE_FIVE_COINS_FROM_USER = "UPDATE t_user SET coins = coins - 5 WHERE username = ?";
-
     private final String UPDATE_USERDATA_BY_USERNAME = "INSERT INTO t_userdata (username, name, bio, image) VALUES (?, ?, ?, ?) " +
             "ON CONFLICT (username) DO UPDATE SET name = EXCLUDED.name, bio = EXCLUDED.bio, image = EXCLUDED.image";
-
     private final String LOGIN_USER = "UPDATE t_user SET token = ? WHERE username = ?";
-
     private final String GET_TOKEN = "SELECT token FROM t_user WHERE username = ?";
+    private final String CREATE_EMPTY_USER_STATS = "INSERT INTO t_stats (name) VALUES (?)";
+    private final String GET_USER_STATS = "SELECT * FROM t_stats WHERE name = ?";
 
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
@@ -65,6 +61,11 @@ public class UserRepository{
         pstmt.setString(1, user.Username());
         pstmt.setString(2, user.Password());
         pstmt.execute();
+
+        PreparedStatement pstmt2 = con.prepareStatement(CREATE_EMPTY_USER_STATS);
+
+        pstmt2.setString(1, user.Username());
+        pstmt2.execute();
         con.close();
     }
 
@@ -180,8 +181,32 @@ public class UserRepository{
         PreparedStatement pstmt = con.prepareStatement(DELETE_ALL_FROM_USERDATATABLE);
         pstmt.execute();
 
-        PreparedStatement pstmt2 = con.prepareStatement(DELETE_ALL_FROM_USERTABLE);
+        PreparedStatement pstmt2 = con.prepareStatement(DELETE_ALL_FROM_STATSTABLE);
         pstmt2.execute();
+
+        PreparedStatement pstmt3 = con.prepareStatement(DELETE_ALL_FROM_USERTABLE);
+        pstmt3.execute();
         con.close();
+    }
+
+    public Optional<UserStats> getUserStats(String username) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(GET_USER_STATS);
+
+        pstmt.setString(1, username);
+
+        ResultSet rs = pstmt.executeQuery();
+        con.close();
+        if (rs.next())
+        {
+            return Optional.of(new UserStats(
+                    rs.getString("name"),
+                    rs.getInt("elo"),
+                    rs.getInt("wins"),
+                    rs.getInt("losses")
+            ));
+        }
+        return Optional.empty();
     }
 }
