@@ -1,9 +1,7 @@
-package at.technikum.apps.mtcg.controller;
+package at.technikum.apps.mtcg.service;
 
 import at.technikum.apps.mtcg.entity.Token;
 import at.technikum.apps.mtcg.repository.UserRepository;
-import at.technikum.apps.mtcg.service.SessionService;
-import at.technikum.apps.mtcg.service.UserService;
 import at.technikum.server.http.Request;
 
 import java.sql.SQLException;
@@ -11,7 +9,7 @@ import java.util.Optional;
 
 class AuthorizationTokenHelper
 {
-    private static final SessionService sessionService = new SessionService(new UserRepository());
+    private static final UserRepository userRepository = new UserRepository();
 
     static boolean invalidToken(Request request)
     {
@@ -22,7 +20,7 @@ class AuthorizationTokenHelper
         }
         try
         {
-            Optional<Token> token = sessionService.getTokenOfUser(username);
+            Optional<Token> token = userRepository.getTokenOfUser(username);
             if (token.isEmpty())
             {
                 return true;
