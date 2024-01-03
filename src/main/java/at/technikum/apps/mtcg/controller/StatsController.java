@@ -1,20 +1,19 @@
 package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.repository.UserRepository;
-import at.technikum.apps.mtcg.service.ScoreboardService;
+import at.technikum.apps.mtcg.service.StatsService;
 import at.technikum.server.http.HttpContentType;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 
-public class ScoreboardController extends Controller{
+public class StatsController extends Controller{
 
-    ScoreboardService scoreboardService = new ScoreboardService(new UserRepository());
-
+    private final StatsService statsService = new StatsService(new UserRepository());
     @Override
     public boolean supports(String route)
     {
-        return route.startsWith("/scoreboard");
+        return route.startsWith("/stats");
     }
 
     @Override
@@ -24,11 +23,11 @@ public class ScoreboardController extends Controller{
         {
             return status(HttpStatus.METHOD_NOT_ALLOWED);
         }
-        return getEloScoreboard(request);
+        return getUserStats(request);
     }
 
-    private Response getEloScoreboard(Request request)
+    public Response getUserStats(Request request)
     {
-        return scoreboardService.getEloScoreboard(request);
+        return statsService.getUserStats(request);
     }
 }

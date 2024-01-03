@@ -12,14 +12,23 @@ import java.util.List;
 
 public class PackageRepository
 {
+    // t_package
     private final String CREATE_PACKAGE = "INSERT INTO t_package (cardid_1, cardid_2, cardid_3, cardid_4, cardid_5) VALUES (?,?,?,?,?)";
-
     private final String GET_ALL_AVAILABLE_PACKAGEID = "SELECT packageId FROM t_package WHERE available = true;";
     private final String SET_PACKAGE_UNAVAILABLE = "UPDATE t_package SET available = false WHERE packageId = ?";
     private final String GET_CARDIDS_FROM_PACKAGE = "SELECT cardid_1, cardid_2, cardid_3, cardid_4, cardid_5 FROM t_package WHERE packageid = ?";
-    private final String GET_CARD_FROM_ID = "SELECT cardid, name, damage FROM t_card WHERE cardid = ?";
-    private final String SET_CARD_OWNER = "UPDATE t_card SET owner = ? WHERE cardid = ?";
     private final String DELETE_ALL_PACKAGE = "DELETE FROM t_package";
+    private final String REMOVE_CARD_FROM_PACKAGE = "UPDATE t_package\n" +
+            "SET\n" +
+            "    cardId_1 = CASE WHEN cardId_1 = ? THEN NULL ELSE cardId_1 END,\n" +
+            "    cardId_2 = CASE WHEN cardId_2 = ? THEN NULL ELSE cardId_2 END,\n" +
+            "    cardId_3 = CASE WHEN cardId_3 = ? THEN NULL ELSE cardId_3 END,\n" +
+            "    cardId_4 = CASE WHEN cardId_4 = ? THEN NULL ELSE cardId_4 END,\n" +
+            "    cardId_5 = CASE WHEN cardId_5 = ? THEN NULL ELSE cardId_5 END\n" +
+            "WHERE\n" +
+            "    ? IN (cardId_1, cardId_2, cardId_3, cardId_4, cardId_5);\n";
+    private final String SET_CARD_OWNER = "UPDATE t_card SET owner = ? WHERE cardid = ?";
+    private final String GET_CARD_FROM_ID = "SELECT cardid, name, damage FROM t_card WHERE cardid = ?";
 
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
@@ -107,6 +116,21 @@ public class PackageRepository
         PreparedStatement deletePackage = con.prepareStatement(DELETE_ALL_PACKAGE);
 
         deletePackage.execute();
+        con.close();
+    }
+
+    public void removeCardFromPackage(String cardId) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(REMOVE_CARD_FROM_PACKAGE);
+        pstmt.setString(1, cardId);
+        pstmt.setString(2, cardId);
+        pstmt.setString(3, cardId);
+        pstmt.setString(4, cardId);
+        pstmt.setString(5, cardId);
+        pstmt.setString(6, cardId);
+
+        pstmt.execute();
         con.close();
     }
 }

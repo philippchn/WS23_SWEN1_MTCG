@@ -1,14 +1,14 @@
 package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.repository.UserRepository;
-import at.technikum.apps.mtcg.service.NewSessionService;
+import at.technikum.apps.mtcg.service.SessionService;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 
 public class SessionController extends Controller {
 
-    private final NewSessionService newSessionService = new NewSessionService(new UserRepository());
+    private final SessionService sessionService = new SessionService(new UserRepository());
 
     @Override
     public boolean supports(String route) {
@@ -33,7 +33,7 @@ public class SessionController extends Controller {
 
     private Response loginUser(Request request)
     {
-        return newSessionService.loginUser(request);
+        return sessionService.loginUser(request);
     }
 
 }

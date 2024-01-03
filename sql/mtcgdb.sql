@@ -22,16 +22,16 @@ CREATE TABLE IF NOT EXISTS t_card(
     damage FLOAT NOT NULL,
     monsterType BOOLEAN NOT NULL,
     elementType VARCHAR(255) NOT NULL,
-    owner varchar(255) REFERENCES t_user(username),
+    owner varchar(255) REFERENCES t_user(username)
 );
 
 CREATE TABLE IF NOT EXISTS t_package (
     packageId SERIAL PRIMARY KEY,
-    cardId_1 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_2 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_3 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_4 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_5 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
+    cardId_1 VARCHAR(255) REFERENCES t_card(cardId),
+    cardId_2 VARCHAR(255) REFERENCES t_card(cardId),
+    cardId_3 VARCHAR(255) REFERENCES t_card(cardId),
+    cardId_4 VARCHAR(255) REFERENCES t_card(cardId),
+    cardId_5 VARCHAR(255) REFERENCES t_card(cardId),
     available BOOLEAN DEFAULT true
 );
 
@@ -47,3 +47,10 @@ CREATE TABLE IF NOT EXISTS t_deck (
     cardId_3 varchar(255),
     cardId_4 varchar(255)
 );
+
+CREATE TABLE IF NOT EXISTS t_stats (
+    name varchar(255) PRIMARY KEY REFERENCES t_user(username),
+    elo INT DEFAULT 100,
+    wins INT DEFAULT 0,
+    losses INT DEFAULT 0
+)

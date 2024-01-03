@@ -14,12 +14,17 @@ import java.util.Optional;
 
 public class CardRepository
 {
+    // t_card
     private final String CREATE_CARD = "INSERT INTO t_card (cardid, name, damage, monstertype, elementtype) VALUES (?,?,?,?,?)";
-    private final String DELETE_CARDS = "DELETE FROM t_card";
-    private final String DELETE_DECKS = "DELETE FROM t_deck";
+    private final String GET_CARD = "SELECT * FROM t_card WHERE cardid = ?";
+    private final String SET_CARD_DAMAGE = "UPDATE t_card SET damage = ? WHERE cardId = ?";
     private final String ALL_CARDS_OF_USER = "SELECT cardid, name, damage FROM t_card WHERE owner = ?";
-    private final String CREATE_DECK = "INSERT INTO t_deck VALUES (?,?,?,?,?)";
     private final String GET_CARD_OWNER = "SELECT owner FROM t_card WHERE cardid = ?";
+    private final String DELETE_CARD = "DELETE FROM t_card WHERE cardid = ?";
+    private final String DELETE_CARDS_TABLE = "DELETE FROM t_card";
+
+    // t_deck
+    private final String CREATE_DECK = "INSERT INTO t_deck VALUES (?,?,?,?,?)";
     private final String GET_DECK = """
             SELECT tc.cardId, tc.name, tc.damage
             FROM t_deck td
@@ -29,6 +34,26 @@ public class CardRepository
                              td.cardId_4 = tc.cardId
             WHERE td.username = ?;
             """;
+    private final String DELETE_DECKS_TABLE = "DELETE FROM t_deck";
+    private final String IS_CARD_IN_DECK = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM t_deck
+                WHERE ? IN (cardId_1, cardId_2, cardId_3, cardId_4)
+            ) AS cardExists;
+            """;
+    private final String GET_DETAIL_DECK = """
+            SELECT tc.cardId, tc.name, tc.damage, tc.monstertype, tc.elementtype
+            FROM t_deck td
+            JOIN t_card tc ON td.cardId_1 = tc.cardId OR
+                             td.cardId_2 = tc.cardId OR
+                             td.cardId_3 = tc.cardId OR
+                             td.cardId_4 = tc.cardId
+            WHERE td.username = ?;
+            """;
+
+
+
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
     public void saveCard(DBCard dbCard) throws SQLException
@@ -88,8 +113,8 @@ public class CardRepository
     public void deleteAll() throws SQLException
     {
         Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt2 = con.prepareStatement(DELETE_DECKS);
-        PreparedStatement pstmt = con.prepareStatement(DELETE_CARDS);
+        PreparedStatement pstmt2 = con.prepareStatement(DELETE_DECKS_TABLE);
+        PreparedStatement pstmt = con.prepareStatement(DELETE_CARDS_TABLE);
         pstmt.execute();
         pstmt2.execute();
         con.close();
@@ -109,7 +134,7 @@ public class CardRepository
         con.close();
     }
 
-    public List<RequestCard> getDeck(String username) throws SQLException
+    public List<RequestCard> getSimpleDeck(String username) throws SQLException
     {
         List<RequestCard> result = new ArrayList<>();
         Connection con = MTCGDatabase.getConnection();
@@ -129,5 +154,86 @@ public class CardRepository
             ));
         }
         return result;
+    }
+
+    public List<DBCard> getDetailDeck(String username) throws SQLException
+    {
+        List<DBCard> result = new ArrayList<>();
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(GET_DETAIL_DECK);
+        pstmt.setString(1, username);
+
+        ResultSet rs = pstmt.executeQuery();
+
+        con.close();
+
+        while (rs.next())
+        {
+            result.add(new DBCard(
+                    rs.getString("cardId"),
+                    rs.getString("name"),
+                    rs.getFloat("damage"),
+                    rs.getBoolean("monstertype"),
+                    rs.getString("elementtype")
+            ));
+        }
+        return result;
+    }
+
+    public Optional<DBCard> getCard(String cardId) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(GET_CARD);
+        pstmt.setString(1, cardId);
+
+        ResultSet rs = pstmt.executeQuery();
+
+        con.close();
+
+        if(rs.next())
+        {
+            return Optional.of(new DBCard(
+                    rs.getString("cardId"),
+                    rs.getString("name"),
+                    rs.getFloat("damage"),
+                    rs.getBoolean("monstertype"),
+                    rs.getString("elementtype")
+            ));
+        }
+
+        return Optional.empty();
+    }
+
+    public void setCardDamage(String cardId, float damage) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(SET_CARD_DAMAGE);
+        pstmt.setFloat(1, damage);
+        pstmt.setString(2, cardId);
+        pstmt.execute();
+        con.close();
+    }
+
+    public void deleteCard(String cardId) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(DELETE_CARD);
+        pstmt.setString(1, cardId);
+        pstmt.execute();
+        con.close();
+    }
+
+    public boolean isCardInDeck(String cardId) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(IS_CARD_IN_DECK);
+        pstmt.setString(1, cardId);
+        ResultSet rs = pstmt.executeQuery();
+        con.close();
+        if (rs.next())
+        {
+            return rs.getBoolean("cardExists");
+        }
+        return false;
     }
 }

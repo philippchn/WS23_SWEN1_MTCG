@@ -106,7 +106,7 @@ public class DeckService
         List<RequestCard> deck;
         try
         {
-            deck = cardRepository.getDeck(usernameFromToken);
+            deck = cardRepository.getSimpleDeck(usernameFromToken);
         }
         catch (SQLException e)
         {
