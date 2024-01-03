@@ -27,11 +27,11 @@ CREATE TABLE IF NOT EXISTS t_card(
 
 CREATE TABLE IF NOT EXISTS t_package (
     packageId SERIAL PRIMARY KEY,
-    cardId_1 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_2 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_3 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_4 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
-    cardId_5 VARCHAR(255) REFERENCES t_card(cardId) NOT NULL,
+    cardId_1 VARCHAR(255) REFERENCES t_card(cardId),
+    cardId_2 VARCHAR(255) REFERENCES t_card(cardId),
+    cardId_3 VARCHAR(255) REFERENCES t_card(cardId),
+    cardId_4 VARCHAR(255) REFERENCES t_card(cardId),
+    cardId_5 VARCHAR(255) REFERENCES t_card(cardId),
     available BOOLEAN DEFAULT true
 );
 
