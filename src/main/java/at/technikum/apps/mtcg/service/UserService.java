@@ -99,7 +99,7 @@ public class UserService
 
         if (userData.isEmpty())
         {
-            return ResponseHelper.status(HttpStatus.NOT_FOUND);
+            return ResponseHelper.status(HttpStatus.NO_CONTENT);
         }
         String userJson;
         try
