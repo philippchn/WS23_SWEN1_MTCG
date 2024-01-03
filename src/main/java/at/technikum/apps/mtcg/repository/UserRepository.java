@@ -37,6 +37,16 @@ public class UserRepository{
     private final String CREATE_EMPTY_USER_STATS = "INSERT INTO t_stats (name) VALUES (?)";
     private final String GET_USER_STATS = "SELECT * FROM t_stats WHERE name = ?";
     private final String GET_ELO_SCOREBOARD = "SELECT * FROM t_stats ORDER BY elo DESC";
+    private final String GIVE_THREE_ELO = """
+            UPDATE t_stats
+            SET elo = elo + 3
+            WHERE name = ?;
+            """;
+    private final String TAKE_FIVE_ELO = """
+            UPDATE t_stats
+            SET elo = elo - 5
+            WHERE name = ?;
+            """;
 
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
@@ -234,5 +244,25 @@ public class UserRepository{
             ));
         }
         return users;
+    }
+
+    public void giveThreeElo(String username) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(GIVE_THREE_ELO);
+
+        pstmt.setString(1, username);
+        pstmt.execute();
+        con.close();
+    }
+
+    public void takeFiveElo(String username) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(TAKE_FIVE_ELO);
+
+        pstmt.setString(1, username);
+        pstmt.execute();
+        con.close();
     }
 }

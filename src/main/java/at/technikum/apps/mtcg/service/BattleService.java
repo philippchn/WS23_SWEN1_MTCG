@@ -2,6 +2,7 @@ package at.technikum.apps.mtcg.service;
 
 import at.technikum.apps.mtcg.entity.card.DBCard;
 import at.technikum.apps.mtcg.repository.CardRepository;
+import at.technikum.apps.mtcg.repository.UserRepository;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
@@ -13,11 +14,13 @@ import java.util.Random;
 public class BattleService
 {
     private final CardRepository cardRepository;
+    private final UserRepository userRepository;
     private List<DBCard> playerOneDeck;
     private  List<DBCard> playerTwoDeck;
-    public BattleService(CardRepository cardRepository)
+    public BattleService(CardRepository cardRepository, UserRepository userRepository)
     {
         this.cardRepository = cardRepository;
+        this.userRepository = userRepository;
     }
 
     public boolean invalidUser(Request request)
@@ -48,18 +51,24 @@ public class BattleService
             cardFight();
         }
 
-        if (playerOneDeck.isEmpty())
+        try
         {
-            return ResponseHelper.statusJsonBody(HttpStatus.OK,"{\n\t\"winner\": \"" + playerTwoUsername + "\"\n}");
+            if (playerOneDeck.isEmpty())
+            {
+                setElo(playerTwoUsername, playerOneUsername);
+                return ResponseHelper.statusJsonBody(HttpStatus.OK, "{\n\t\"winner\": \"" + playerTwoUsername + "\"\n}");
+            }
+            else if (playerTwoDeck.isEmpty())
+            {
+                setElo(playerOneUsername, playerTwoUsername);
+                return ResponseHelper.statusJsonBody(HttpStatus.OK, "{\n\t\"winner\": \"" + playerOneUsername + "\"\n}");
+            }
         }
-        else if(playerTwoDeck.isEmpty())
+        catch (RuntimeException e)
         {
-            return ResponseHelper.statusJsonBody(HttpStatus.OK,"{\n\t\"winner\": \"" + playerOneUsername + "\"\n}");
+            return ResponseHelper.statusJsonBody(HttpStatus.OK, "{\n\t\"message\": \"Battle over but error accessing the Scoreboard\"\n}");
         }
-        else
-        {
-            return ResponseHelper.statusJsonBody(HttpStatus.OK,"{\n\t\"winner\": \"No winner\"\n}");
-        }
+        return ResponseHelper.statusJsonBody(HttpStatus.OK,"{\n\t\"winner\": \"No winner\"\n}");
     }
 
     private void cardFight()
@@ -94,7 +103,8 @@ public class BattleService
         return damageMonsterModifier(attacker, defender, damage);
     }
 
-    private float damageMonsterModifier(DBCard attacker, DBCard defender, float damage) {
+    private float damageMonsterModifier(DBCard attacker, DBCard defender, float damage)
+    {
         // Goblin -> Dragon
         if (attacker.name().contains("Goblin") && defender.name().equals("Dragon"))
         {
@@ -160,5 +170,18 @@ public class BattleService
         }
 
         return damage;
+    }
+
+    private void setElo(String winnerUsername, String loserUsername)
+    {
+        try
+        {
+            userRepository.giveThreeElo(winnerUsername);
+            userRepository.takeFiveElo(loserUsername);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException();
+        }
     }
 }

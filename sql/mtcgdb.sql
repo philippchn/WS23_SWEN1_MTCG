@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS t_deck (
 
 CREATE TABLE IF NOT EXISTS t_stats (
     name varchar(255) PRIMARY KEY REFERENCES t_user(username),
-    elo INT DEFAULT 0,
+    elo INT DEFAULT 100,
     wins INT DEFAULT 0,
     losses INT DEFAULT 0
 )
