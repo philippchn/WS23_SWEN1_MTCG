@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS t_card(
     damage FLOAT NOT NULL,
     monsterType BOOLEAN NOT NULL,
     elementType VARCHAR(255) NOT NULL,
-    owner varchar(255) REFERENCES t_user(username),
+    owner varchar(255) REFERENCES t_user(username)
 );
 
 CREATE TABLE IF NOT EXISTS t_package (
