@@ -88,9 +88,13 @@ public class BattleService
 
         if (!attacker.isMonster())
         {
-            damage = damageSpellModifier(attacker, defender, damage);
+            return damageSpellModifier(attacker, defender, damage);
         }
 
+        return damageMonsterModifier(attacker, defender, damage);
+    }
+
+    private float damageMonsterModifier(DBCard attacker, DBCard defender, float damage) {
         // Goblin -> Dragon
         if (attacker.name().contains("Goblin") && defender.name().equals("Dragon"))
         {
@@ -106,11 +110,6 @@ public class BattleService
 //        {
 //            return 10000;
 //        }
-        // Spell -> Kraken
-        if (attacker.name().contains("Spell") && defender.name().equals("Kraken"))
-        {
-            return 0;
-        }
         // Dragon -> FireElf
         if (attacker.name().equals("Dragon") && defender.name().equals("FireElf"))
         {
@@ -121,6 +120,12 @@ public class BattleService
 
     private float damageSpellModifier(DBCard attacker, DBCard defender, float damage)
     {
+        // Spell -> Kraken
+        if (defender.name().equals("Kraken"))
+        {
+            return 0;
+        }
+
         // Water -> Fire
         if (attacker.elementType().equals("water") && defender.elementType().equals("fire"))
         {

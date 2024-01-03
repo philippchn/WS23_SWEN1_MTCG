@@ -16,19 +16,24 @@ import java.util.Optional;
 
 public class UserRepository{
 
+    // t_user
     private final String FIND_ALL_SQL = "SELECT * FROM t_user";
     private final String SAVE_SQL_USER = "INSERT INTO t_user (username, password) VALUES(?, ?)";
     private final String FIND_USER_BY_USERNAME = "SELECT * FROM t_user WHERE username = ?";
     private final String GET_COINS = "SELECT coins FROM t_user WHERE username = ?";
     private final String DELETE_ALL_FROM_USERTABLE = "DELETE FROM t_user";
-    private final String DELETE_ALL_FROM_USERDATATABLE = "DELETE FROM t_userdata";
-    private final String DELETE_ALL_FROM_STATSTABLE = "DELETE FROM t_stats";
-    private final String GET_USERDATA_BY_USERNAME = "SELECT * FROM t_userdata WHERE username = ?";
     private final String TAKE_FIVE_COINS_FROM_USER = "UPDATE t_user SET coins = coins - 5 WHERE username = ?";
-    private final String UPDATE_USERDATA_BY_USERNAME = "INSERT INTO t_userdata (username, name, bio, image) VALUES (?, ?, ?, ?) " +
-            "ON CONFLICT (username) DO UPDATE SET name = EXCLUDED.name, bio = EXCLUDED.bio, image = EXCLUDED.image";
     private final String LOGIN_USER = "UPDATE t_user SET token = ? WHERE username = ?";
     private final String GET_TOKEN = "SELECT token FROM t_user WHERE username = ?";
+
+    // t_userdata
+    private final String DELETE_USERDATA_TABLE = "DELETE FROM t_userdata";
+    private final String GET_USERDATA_BY_USERNAME = "SELECT * FROM t_userdata WHERE username = ?";
+    private final String UPDATE_USERDATA_BY_USERNAME = "INSERT INTO t_userdata (username, name, bio, image) VALUES (?, ?, ?, ?) " +
+            "ON CONFLICT (username) DO UPDATE SET name = EXCLUDED.name, bio = EXCLUDED.bio, image = EXCLUDED.image";
+
+    // t_stats
+    private final String DELETE_STATS_TABLE = "DELETE FROM t_stats";
     private final String CREATE_EMPTY_USER_STATS = "INSERT INTO t_stats (name) VALUES (?)";
     private final String GET_USER_STATS = "SELECT * FROM t_stats WHERE name = ?";
     private final String GET_ELO_SCOREBOARD = "SELECT * FROM t_stats ORDER BY elo DESC";
@@ -179,10 +184,10 @@ public class UserRepository{
     {
         Connection con = MTCGDatabase.getConnection();
 
-        PreparedStatement pstmt = con.prepareStatement(DELETE_ALL_FROM_USERDATATABLE);
+        PreparedStatement pstmt = con.prepareStatement(DELETE_USERDATA_TABLE);
         pstmt.execute();
 
-        PreparedStatement pstmt2 = con.prepareStatement(DELETE_ALL_FROM_STATSTABLE);
+        PreparedStatement pstmt2 = con.prepareStatement(DELETE_STATS_TABLE);
         pstmt2.execute();
 
         PreparedStatement pstmt3 = con.prepareStatement(DELETE_ALL_FROM_USERTABLE);
