@@ -54,3 +54,11 @@ CREATE TABLE IF NOT EXISTS t_stats (
     wins INT DEFAULT 0,
     losses INT DEFAULT 0
 )
+
+CREATE TABLE IF NOT EXISTS t_trades (
+    id varchar(255) PRIMARY KEY,
+    cardid varchar(255) UNIQUE REFERENCES t_card(cardId),
+    type varchar(255),
+    minDmg float,
+    owner varchar(255) REFERENCES t_user(username)
+)

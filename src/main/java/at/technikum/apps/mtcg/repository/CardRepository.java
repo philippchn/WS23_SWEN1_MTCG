@@ -22,6 +22,7 @@ public class CardRepository
     private final String GET_CARD_OWNER = "SELECT owner FROM t_card WHERE cardid = ?";
     private final String DELETE_CARD = "DELETE FROM t_card WHERE cardid = ?";
     private final String DELETE_CARDS_TABLE = "DELETE FROM t_card";
+    private final String CHANGE_CARD_OWNER = "UPDATE t_card SET owner = ? WHERE cardid = ?";
 
     // t_deck
     private final String CREATE_DECK = "INSERT INTO t_deck VALUES (?,?,?,?,?)";
@@ -235,5 +236,15 @@ public class CardRepository
             return rs.getBoolean("cardExists");
         }
         return false;
+    }
+
+    public void updateCardOwner(String cardid, String newOwner) throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(CHANGE_CARD_OWNER);
+        pstmt.setString(1, newOwner);
+        pstmt.setString(2, cardid);
+        pstmt.execute();
+        con.close();
     }
 }

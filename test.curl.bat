@@ -1,32 +1,43 @@
 @echo off
 
 REM --------------------------------------------------
-echo 14) edit user data
+echo 20) trade
+echo check trading deals
+curl -X GET http://localhost:10001/tradings --header "Authorization: Bearer kienboec-mtcgToken"
 echo.
-curl -X GET http://localhost:10001/users/kienboec --header "Authorization: Bearer kienboec-mtcgToken"
+echo create trading deal
+curl -X POST http://localhost:10001/tradings --header "Content-Type: application/json" --header "Authorization: Bearer kienboec-mtcgToken" -d "{\"Id\": \"6cd85277-4590-49d4-b0cf-ba0a921faad0\", \"CardToTrade\": \"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334\", \"Type\": \"monster\", \"MinimumDamage\": 15}"
 echo.
-curl -X GET http://localhost:10001/users/altenhof --header "Authorization: Bearer altenhof-mtcgToken"
+echo check trading deals
+curl -X GET http://localhost:10001/tradings --header "Authorization: Bearer kienboec-mtcgToken"
 echo.
-curl -X PUT http://localhost:10001/users/kienboec --header "Content-Type: application/json" --header "Authorization: Bearer kienboec-mtcgToken" -d "{\"Name\": \"Kienboeck\",  \"Bio\": \"me playin...\", \"Image\": \":-)\"}"
+curl -X GET http://localhost:10001/tradings --header "Authorization: Bearer altenhof-mtcgToken"
 echo.
-curl -X PUT http://localhost:10001/users/altenhof --header "Content-Type: application/json" --header "Authorization: Bearer altenhof-mtcgToken" -d "{\"Name\": \"Altenhofer\", \"Bio\": \"me codin...\",  \"Image\": \":-D\"}"
-echo.
-curl -X GET http://localhost:10001/users/kienboec --header "Authorization: Bearer kienboec-mtcgToken"
-echo.
-curl -X GET http://localhost:10001/users/altenhof --header "Authorization: Bearer altenhof-mtcgToken"
+echo delete trading deals
+curl -X DELETE http://localhost:10001/tradings/6cd85277-4590-49d4-b0cf-ba0a921faad0 --header "Authorization: Bearer kienboec-mtcgToken"
 echo.
 echo.
-echo should fail:
-curl -X GET http://localhost:10001/users/altenhof --header "Authorization: Bearer kienboec-mtcgToken"
+
+REM --------------------------------------------------
+echo 21) check trading deals
+curl -X GET http://localhost:10001/tradings  --header "Authorization: Bearer kienboec-mtcgToken"
 echo.
-curl -X GET http://localhost:10001/users/kienboec --header "Authorization: Bearer altenhof-mtcgToken"
+curl -X POST http://localhost:10001/tradings --header "Content-Type: application/json" --header "Authorization: Bearer kienboec-mtcgToken" -d "{\"Id\": \"6cd85277-4590-49d4-b0cf-ba0a921faad0\", \"CardToTrade\": \"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334\", \"Type\": \"monster\", \"MinimumDamage\": 15}"
+echo check trading deals
+curl -X GET http://localhost:10001/tradings  --header "Authorization: Bearer kienboec-mtcgToken"
 echo.
-curl -X PUT http://localhost:10001/users/kienboec --header "Content-Type: application/json" --header "Authorization: Bearer altenhof-mtcgToken" -d "{\"Name\": \"Hoax\",  \"Bio\": \"me playin...\", \"Image\": \":-)\"}"
+curl -X GET http://localhost:10001/tradings  --header "Authorization: Bearer altenhof-mtcgToken"
 echo.
-curl -X PUT http://localhost:10001/users/altenhof --header "Content-Type: application/json" --header "Authorization: Bearer kienboec-mtcgToken" -d "{\"Name\": \"Hoax\", \"Bio\": \"me codin...\",  \"Image\": \":-D\"}"
+echo try to trade with yourself (should fail)
+curl -X POST http://localhost:10001/tradings/6cd85277-4590-49d4-b0cf-ba0a921faad0 --header "Content-Type: application/json" --header "Authorization: Bearer kienboec-mtcgToken" -d "\"4ec8b269-0dfa-4f97-809a-2c63fe2a0025\""
 echo.
-curl -X GET http://localhost:10001/users/someGuy  --header "Authorization: Bearer kienboec-mtcgToken"
+echo try to trade
 echo.
+curl -X POST http://localhost:10001/tradings/6cd85277-4590-49d4-b0cf-ba0a921faad0 --header "Content-Type: application/json" --header "Authorization: Bearer altenhof-mtcgToken" -d "\"951e886a-0fbf-425d-8df5-af2ee4830d85\""
+echo.
+curl -X GET http://localhost:10001/tradings --header "Authorization: Bearer kienboec-mtcgToken"
+echo.
+curl -X GET http://localhost:10001/tradings --header "Authorization: Bearer altenhof-mtcgToken"
 echo.
 
 
