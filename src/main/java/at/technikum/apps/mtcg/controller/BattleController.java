@@ -12,6 +12,7 @@ public class BattleController extends Controller
     private final BattleService battleService = new BattleService(new CardRepository(), new UserRepository());
     private boolean isBattlePending = false;
     private Request enemyPending;
+    private String battleLog = "";
 
     @Override
     public boolean supports(String route)
@@ -34,15 +35,66 @@ public class BattleController extends Controller
         {
             if (!isBattlePending)
             {
-                isBattlePending = true;
-                enemyPending = request;
-                return statusJsonBody(HttpStatus.OK, "{\n\t\"response\": \"WAITING FOR OPPONENT\"\n}");
+                return requestBattle(request);
             }
             else
             {
-                isBattlePending = false;
-                return battleService.startBattle(request, enemyPending);
+                if (request.getAuthorizationToken().equals(enemyPending.getAuthorizationToken()))
+                {
+                    return status(HttpStatus.FORBIDDEN);
+                }
+                return prepareBattle(request);
             }
         }
+    }
+
+    private Response requestBattle(Request request)
+    {
+        battleLog = "";
+        isBattlePending = true;
+        enemyPending = request;
+
+        try
+        {
+            long timeoutMillis = 5000;
+            long startTime = System.currentTimeMillis();
+
+            while (battleLog.isEmpty())
+            {
+                long currentTime = System.currentTimeMillis();
+                long elapsedTime = currentTime - startTime;
+
+                if (elapsedTime >= timeoutMillis) {
+                    isBattlePending = false;
+                    return status(HttpStatus.REQUEST_TIMEOUT);
+                }
+
+                this.wait(timeoutMillis - elapsedTime);
+            }
+        }
+        catch (InterruptedException e)
+        {
+            Thread.currentThread().interrupt();
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (battleLog.equals("ERROR"))
+        {
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return statusJsonBody(HttpStatus.OK, battleLog);
+    }
+
+    private Response prepareBattle(Request request)
+    {
+        isBattlePending = false;
+        battleLog = battleService.startBattle(request, enemyPending);
+        this.notify();
+        if (battleLog.equals("ERROR"))
+        {
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return statusJsonBody(HttpStatus.OK, battleLog);
     }
 }
