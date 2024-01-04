@@ -10,39 +10,44 @@ class AuthorizationTokenHelperTest
     @Test
     void tokenUsernameIsNotPathUsername()
     {
+        AuthorizationTokenHelper authorizationTokenHelper = new AuthorizationTokenHelper();
         Request request = new Request();
         request.setAuthorizationToken("dummy-mtcgToken");
-        assertFalse(AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, "dummy"));
+        assertFalse(authorizationTokenHelper.tokenUsernameIsNotPathUsername(request, "dummy"));
     }
     @Test
     void tokenUsernameIsNotPathUsernameWithWrongUsername()
     {
+        AuthorizationTokenHelper authorizationTokenHelper = new AuthorizationTokenHelper();
         Request request = new Request();
         request.setAuthorizationToken("invalid-mtcgToken");
-        assertTrue(AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, "dummy"));
+        assertTrue(authorizationTokenHelper.tokenUsernameIsNotPathUsername(request, "dummy"));
     }
 
     @Test
     void isAdmin()
     {
+        AuthorizationTokenHelper authorizationTokenHelper = new AuthorizationTokenHelper();
         Request request = new Request();
         request.setAuthorizationToken("admin-mtcgToken");
-        assertTrue(AuthorizationTokenHelper.isAdmin(request));
+        assertTrue(authorizationTokenHelper.isAdmin(request));
     }
 
     @Test
     void getUsernameFromToken()
     {
+        AuthorizationTokenHelper authorizationTokenHelper = new AuthorizationTokenHelper();
         Request request = new Request();
         request.setAuthorizationToken("username-mtcgToken");
-        assertEquals(AuthorizationTokenHelper.getUsernameFromToken(request), "username");
+        assertEquals(authorizationTokenHelper.getUsernameFromToken(request), "username");
     }
 
     @Test
     void getUsernameFromTokenWrongUsername()
     {
+        AuthorizationTokenHelper authorizationTokenHelper = new AuthorizationTokenHelper();
         Request request = new Request();
         request.setAuthorizationToken("invalid-mtcgToken");
-        assertNotEquals(AuthorizationTokenHelper.getUsernameFromToken(request), "username");
+        assertNotEquals(authorizationTokenHelper.getUsernameFromToken(request), "username");
     }
 }
