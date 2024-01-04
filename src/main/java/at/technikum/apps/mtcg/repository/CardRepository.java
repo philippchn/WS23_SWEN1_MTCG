@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,41 +72,55 @@ public class CardRepository
         con.close();
     }
 
-    public List<RequestCard> getAllCardsOfUser(String username) throws SQLException
+    public List<RequestCard> getAllCardsOfUser(String username)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(ALL_CARDS_OF_USER);
-        pstmt.setString(1, username);
-
-        ResultSet rs = pstmt.executeQuery();
-
-        List<RequestCard> list = new ArrayList<>();
-
-        while (rs.next())
+        try
         {
-            list.add(new RequestCard(
-                    rs.getString("cardid"),
-                    rs.getString("name"),
-                    rs.getInt("damage")
-            ));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(ALL_CARDS_OF_USER);
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            List<RequestCard> list = new ArrayList<>();
+
+            while (rs.next())
+            {
+                list.add(new RequestCard(
+                        rs.getString("cardid"),
+                        rs.getString("name"),
+                        rs.getInt("damage")
+                ));
+            }
+            con.close();
+            return list;
         }
-        con.close();
-        return list;
+        catch (SQLException e)
+        {
+            return Collections.emptyList();
+        }
     }
 
-    public Optional<String> getCardOwner(String cardId) throws SQLException
+    public Optional<String> getCardOwner(String cardId)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_CARD_OWNER);
-        pstmt.setString(1, cardId);
-
-        ResultSet rs = pstmt.executeQuery();
-        con.close();
-        if (rs.next())
+        try
         {
-            return Optional.of(rs.getString("owner"));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_CARD_OWNER);
+            pstmt.setString(1, cardId);
+
+            ResultSet rs = pstmt.executeQuery();
+            con.close();
+            if (rs.next())
+            {
+                return Optional.of(rs.getString("owner"));
+            }
+            else
+            {
+                return Optional.empty();
+            }
         }
-        else
+        catch (SQLException e)
         {
             return Optional.empty();
         }
@@ -135,74 +150,94 @@ public class CardRepository
         con.close();
     }
 
-    public List<RequestCard> getSimpleDeck(String username) throws SQLException
+    public List<RequestCard> getSimpleDeck(String username)
     {
-        List<RequestCard> result = new ArrayList<>();
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_DECK);
-        pstmt.setString(1, username);
-
-        ResultSet rs = pstmt.executeQuery();
-
-        con.close();
-
-        while (rs.next())
+        try
         {
-            result.add(new RequestCard(
-                    rs.getString("cardId"),
-                    rs.getString("name"),
-                    rs.getFloat("damage")
-            ));
+            List<RequestCard> result = new ArrayList<>();
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_DECK);
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            con.close();
+
+            while (rs.next())
+            {
+                result.add(new RequestCard(
+                        rs.getString("cardId"),
+                        rs.getString("name"),
+                        rs.getFloat("damage")
+                ));
+            }
+            return result;
         }
-        return result;
+        catch (SQLException e)
+        {
+            return Collections.emptyList();
+        }
     }
 
-    public List<DBCard> getDetailDeck(String username) throws SQLException
+    public List<DBCard> getDetailDeck(String username)
     {
-        List<DBCard> result = new ArrayList<>();
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_DETAIL_DECK);
-        pstmt.setString(1, username);
-
-        ResultSet rs = pstmt.executeQuery();
-
-        con.close();
-
-        while (rs.next())
+        try
         {
-            result.add(new DBCard(
-                    rs.getString("cardId"),
-                    rs.getString("name"),
-                    rs.getFloat("damage"),
-                    rs.getBoolean("monstertype"),
-                    rs.getString("elementtype")
-            ));
+            List<DBCard> result = new ArrayList<>();
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_DETAIL_DECK);
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            con.close();
+
+            while (rs.next())
+            {
+                result.add(new DBCard(
+                        rs.getString("cardId"),
+                        rs.getString("name"),
+                        rs.getFloat("damage"),
+                        rs.getBoolean("monstertype"),
+                        rs.getString("elementtype")
+                ));
+            }
+            return result;
         }
-        return result;
+        catch (SQLException e)
+        {
+            return Collections.emptyList();
+        }
     }
 
-    public Optional<DBCard> getCard(String cardId) throws SQLException
+    public Optional<DBCard> getCard(String cardId)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_CARD);
-        pstmt.setString(1, cardId);
-
-        ResultSet rs = pstmt.executeQuery();
-
-        con.close();
-
-        if(rs.next())
+        try
         {
-            return Optional.of(new DBCard(
-                    rs.getString("cardId"),
-                    rs.getString("name"),
-                    rs.getFloat("damage"),
-                    rs.getBoolean("monstertype"),
-                    rs.getString("elementtype")
-            ));
-        }
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_CARD);
+            pstmt.setString(1, cardId);
 
-        return Optional.empty();
+            ResultSet rs = pstmt.executeQuery();
+
+            con.close();
+
+            if(rs.next())
+            {
+                return Optional.of(new DBCard(
+                        rs.getString("cardId"),
+                        rs.getString("name"),
+                        rs.getFloat("damage"),
+                        rs.getBoolean("monstertype"),
+                        rs.getString("elementtype")
+                ));
+            }
+            return Optional.empty();
+        }
+        catch (SQLException e)
+        {
+            return Optional.empty();
+        }
     }
 
     public void setCardDamage(String cardId, float damage) throws SQLException
@@ -224,18 +259,25 @@ public class CardRepository
         con.close();
     }
 
-    public boolean isCardInDeck(String cardId) throws SQLException
+    public boolean isCardInDeck(String cardId)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(IS_CARD_IN_DECK);
-        pstmt.setString(1, cardId);
-        ResultSet rs = pstmt.executeQuery();
-        con.close();
-        if (rs.next())
+        try
         {
-            return rs.getBoolean("cardExists");
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(IS_CARD_IN_DECK);
+            pstmt.setString(1, cardId);
+            ResultSet rs = pstmt.executeQuery();
+            con.close();
+            if (rs.next())
+            {
+                return rs.getBoolean("cardExists");
+            }
+            return false;
         }
-        return false;
+        catch (SQLException e)
+        {
+            return false;
+        }
     }
 
     public void updateCardOwner(String cardid, String newOwner) throws SQLException

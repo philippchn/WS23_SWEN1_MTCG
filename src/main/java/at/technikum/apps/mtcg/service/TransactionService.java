@@ -38,19 +38,19 @@ public class TransactionService
         List<RequestCard> acquiredCards;
         String cardsJson;
 
+        if (AuthorizationTokenHelper.invalidToken(request))
+        {
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
+        }
+
+        coins = userRepository.getCoins(username);
+        if (coins < 5)
+        {
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
+        }
+
         try
         {
-            if (AuthorizationTokenHelper.invalidToken(request))
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
-
-            coins = userRepository.getCoins(username);
-            if (coins < 5)
-            {
-                return ResponseHelper.status(HttpStatus.FORBIDDEN);
-            }
-
             acquiredCards = buyPackage(username);
 
             if(acquiredCards.isEmpty())

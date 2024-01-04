@@ -54,15 +54,7 @@ public class UserService
 
     public Response findAll()
     {
-        List<User> users;
-        try
-        {
-            users = userRepository.findAll();
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        List<User> users = userRepository.findAll();
 
         try
         {
@@ -87,15 +79,7 @@ public class UserService
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
-        Optional<UserData> userData;
-        try
-        {
-            userData = userRepository.findUserDataByUsername(username);
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Optional<UserData> userData = userRepository.findUserDataByUsername(username);
 
         if (userData.isEmpty())
         {

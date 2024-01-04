@@ -18,18 +18,13 @@ class AuthorizationTokenHelper
         {
             return false;
         }
-        try
-        {
-            Optional<Token> token = userRepository.getTokenOfUser(username);
-            if (token.isEmpty())
-            {
-                return true;
-            }
-        }
-        catch (SQLException e)
+
+        Optional<Token> token = userRepository.getTokenOfUser(username);
+        if (token.isEmpty())
         {
             return true;
         }
+
         return false;
     }
 

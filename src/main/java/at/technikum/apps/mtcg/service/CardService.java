@@ -35,28 +35,13 @@ public class CardService
     {
         String token = request.getAuthorizationToken();
         String usernameFromToken = AuthorizationTokenHelper.getUsernameFromToken(request);
-        try
+
+        if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
         {
-            if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
-        List<RequestCard> allCards;
-        try
-        {
-            allCards = cardRepository.getAllCardsOfUser(usernameFromToken);
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
+        List<RequestCard> allCards = cardRepository.getAllCardsOfUser(usernameFromToken);
         if (allCards.isEmpty())
         {
             return ResponseHelper.status(HttpStatus.NO_CONTENT);
@@ -91,55 +76,35 @@ public class CardService
             return ResponseHelper.status(HttpStatus.BAD_REQUEST);
         }
 
-        try
+        if(cardRepository.isCardInDeck(cards[0]) || cardRepository.isCardInDeck(cards[1]))
         {
-            if(cardRepository.isCardInDeck(cards[0]) || cardRepository.isCardInDeck(cards[1]))
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
-        try
+        Optional<String> cardOneOwner = cardRepository.getCardOwner(cards[0]);
+        Optional<String> cardTwoOwner = cardRepository.getCardOwner(cards[1]);
+        if (cardOneOwner.isEmpty() || cardTwoOwner.isEmpty())
         {
-            Optional<String> cardOneOwner = cardRepository.getCardOwner(cards[0]);
-            Optional<String> cardTwoOwner = cardRepository.getCardOwner(cards[1]);
-            if (cardOneOwner.isEmpty() || cardTwoOwner.isEmpty())
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
-            String username = AuthorizationTokenHelper.getUsernameFromToken(request);
-            if (!cardOneOwner.get().equals(username) || !cardTwoOwner.get().equals(username))
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
-        catch (SQLException e)
+        String username = AuthorizationTokenHelper.getUsernameFromToken(request);
+        if (!cardOneOwner.get().equals(username) || !cardTwoOwner.get().equals(username))
         {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
         Optional<DBCard> card1;
         Optional<DBCard> card2;
-        try
+
+        card1 = cardRepository.getCard(cards[0]);
+        card2 = cardRepository.getCard(cards[1]);
+        if (card1.isEmpty() || card2.isEmpty())
         {
-            card1 = cardRepository.getCard(cards[0]);
-            card2 = cardRepository.getCard(cards[1]);
-            if (card1.isEmpty() || card2.isEmpty())
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
-            if (!card1.get().name().equals(card2.get().name()))
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
-        catch (SQLException e)
+        if (!card1.get().name().equals(card2.get().name()))
         {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
         try

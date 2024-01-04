@@ -39,12 +39,11 @@ public class BattleService
         String playerOneUsername = AuthorizationTokenHelper.getUsernameFromToken(request);
         String playerTwoUsername = AuthorizationTokenHelper.getUsernameFromToken(enemyPendingRequest);
 
-        try
-        {
-            playerOneDeck = cardRepository.getDetailDeck(playerOneUsername);
-            playerTwoDeck = cardRepository.getDetailDeck(playerTwoUsername);
-        }
-        catch (SQLException e)
+
+        playerOneDeck = cardRepository.getDetailDeck(playerOneUsername);
+        playerTwoDeck = cardRepository.getDetailDeck(playerTwoUsername);
+
+        if (playerOneDeck.isEmpty() || playerTwoDeck.isEmpty())
         {
             return ERROR;
         }

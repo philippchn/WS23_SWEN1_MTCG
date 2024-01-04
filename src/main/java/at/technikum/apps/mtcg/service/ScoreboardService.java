@@ -30,13 +30,14 @@ public class ScoreboardService
         }
 
         List<UserStats> scoreboard;
+        scoreboard = userRepository.getEloScoreboard();
+
         String scoreboardJson;
         try
         {
-            scoreboard = userRepository.getEloScoreboard();
             scoreboardJson  = objectMapper.writeValueAsString(scoreboard);
         }
-        catch (SQLException | JsonProcessingException e)
+        catch (JsonProcessingException e)
         {
             return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
         }

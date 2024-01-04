@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,23 +51,30 @@ public class UserRepository{
 
     private final MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
-    public List<User> findAll() throws SQLException
+    public List<User> findAll()
     {
-        List<User> users = new ArrayList<>();
+        try
+        {
+            List<User> users = new ArrayList<>();
 
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(FIND_ALL_SQL);
-        ResultSet rs = pstmt.executeQuery();
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(FIND_ALL_SQL);
+            ResultSet rs = pstmt.executeQuery();
 
-        while (rs.next()) {
-            User user = new User(
-                    rs.getString("username"),
-                    rs.getString("password")
-            );
-            users.add(user);
+            while (rs.next()) {
+                User user = new User(
+                        rs.getString("username"),
+                        rs.getString("password")
+                );
+                users.add(user);
+            }
+            con.close();
+            return users;
         }
-        con.close();
-        return users;
+        catch (SQLException e)
+        {
+            return Collections.emptyList();
+        }
     }
 
     public void saveUser(User user) throws SQLException
@@ -85,44 +93,55 @@ public class UserRepository{
         con.close();
     }
 
-    public Optional<User> findUserByUsername(String username) throws SQLException
+    public Optional<User> findUserByUsername(String username)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(FIND_USER_BY_USERNAME);
-        pstmt.setString(1, username);
-
-        ResultSet rs = pstmt.executeQuery();
-        con.close();
-        if (rs.next())
+        try
         {
-            return Optional.of(new User(
-                    rs.getString("username"),
-                    rs.getString("password")
-            ));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(FIND_USER_BY_USERNAME);
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+            con.close();
+            if (rs.next())
+            {
+                return Optional.of(new User(
+                        rs.getString("username"),
+                        rs.getString("password")
+                ));
+            }
+            else
+            {
+                return Optional.empty();
+            }
         }
-        else
+        catch (SQLException e)
         {
             return Optional.empty();
         }
     }
 
-    public Optional<UserData> findUserDataByUsername(String username) throws SQLException
+    public Optional<UserData> findUserDataByUsername(String username)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_USERDATA_BY_USERNAME);
-        pstmt.setString(1, username);
-
-        ResultSet rs = pstmt.executeQuery();
-        con.close();
-        if (rs.next())
+        try
         {
-            return Optional.of(new UserData(
-                    rs.getString("name"),
-                    rs.getString("bio"),
-                    rs.getString("image")
-            ));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_USERDATA_BY_USERNAME);
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+            con.close();
+            if (rs.next())
+            {
+                return Optional.of(new UserData(
+                        rs.getString("name"),
+                        rs.getString("bio"),
+                        rs.getString("image")
+                ));
+            }
+            return Optional.empty();
         }
-        else
+        catch (SQLException e)
         {
             return Optional.empty();
         }
@@ -140,17 +159,24 @@ public class UserRepository{
         con.close();
     }
 
-    public int getCoins(String username) throws SQLException
+    public int getCoins(String username)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_COINS);
+        try
+        {
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_COINS);
 
-        pstmt.setString(1, username);
+            pstmt.setString(1, username);
 
-        ResultSet rs = pstmt.executeQuery();
-        rs.next();
-        con.close();
-        return rs.getInt("coins");
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+            con.close();
+            return rs.getInt("coins");
+        }
+        catch (SQLException e)
+        {
+            return 0;
+        }
     }
 
     public void takeFiveCoins(String username) throws SQLException
@@ -174,20 +200,27 @@ public class UserRepository{
         con.close();
     }
 
-    public Optional<Token> getTokenOfUser(String username) throws SQLException
+    public Optional<Token> getTokenOfUser(String username)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_TOKEN);
-
-        pstmt.setString(1, username);
-
-        ResultSet rs = pstmt.executeQuery();
-        con.close();
-        if (rs.next())
+        try
         {
-            return Optional.of(new Token(rs.getString("token")));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_TOKEN);
+
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+            con.close();
+            if (rs.next())
+            {
+                return Optional.of(new Token(rs.getString("token")));
+            }
+            return Optional.empty();
         }
-        return Optional.empty();
+        catch (SQLException e)
+        {
+            return Optional.empty();
+        }
     }
 
     public void deleteAll() throws SQLException
@@ -205,45 +238,59 @@ public class UserRepository{
         con.close();
     }
 
-    public Optional<UserStats> getUserStats(String username) throws SQLException
+    public Optional<UserStats> getUserStats(String username)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_USER_STATS);
-
-        pstmt.setString(1, username);
-
-        ResultSet rs = pstmt.executeQuery();
-        con.close();
-        if (rs.next())
+        try
         {
-            return Optional.of(new UserStats(
-                    rs.getString("name"),
-                    rs.getInt("elo"),
-                    rs.getInt("wins"),
-                    rs.getInt("losses")
-            ));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_USER_STATS);
+
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+            con.close();
+            if (rs.next())
+            {
+                return Optional.of(new UserStats(
+                        rs.getString("name"),
+                        rs.getInt("elo"),
+                        rs.getInt("wins"),
+                        rs.getInt("losses")
+                ));
+            }
+            return Optional.empty();
         }
-        return Optional.empty();
+        catch (SQLException e)
+        {
+            return Optional.empty();
+        }
     }
 
-    public List<UserStats> getEloScoreboard() throws SQLException
+    public List<UserStats> getEloScoreboard()
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_ELO_SCOREBOARD);
-        ResultSet rs = pstmt.executeQuery();
-        con.close();
-
-        List<UserStats> users = new ArrayList<>();
-        while (rs.next())
+        try
         {
-            users.add(new UserStats(
-                    rs.getString("name"),
-                    rs.getInt("elo"),
-                    rs.getInt("wins"),
-                    rs.getInt("losses")
-            ));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_ELO_SCOREBOARD);
+            ResultSet rs = pstmt.executeQuery();
+            con.close();
+
+            List<UserStats> users = new ArrayList<>();
+            while (rs.next())
+            {
+                users.add(new UserStats(
+                        rs.getString("name"),
+                        rs.getInt("elo"),
+                        rs.getInt("wins"),
+                        rs.getInt("losses")
+                ));
+            }
+            return users;
         }
-        return users;
+        catch (SQLException e)
+        {
+            return Collections.emptyList();
+        }
     }
 
     public void giveThreeElo(String username) throws SQLException

@@ -32,17 +32,18 @@ public class StatsService
         String username = AuthorizationTokenHelper.getUsernameFromToken(request);
 
         Optional<UserStats> userStats;
+        userStats = userRepository.getUserStats(username);
+        if (userStats.isEmpty())
+        {
+            return ResponseHelper.status(HttpStatus.NOT_FOUND);
+        }
+
         String userStatsJson;
         try
         {
-            userStats = userRepository.getUserStats(username);
-            if (userStats.isEmpty())
-            {
-                return ResponseHelper.status(HttpStatus.NOT_FOUND);
-            }
             userStatsJson = objectMapper.writeValueAsString(userStats.get());
         }
-        catch (SQLException | JsonProcessingException e)
+        catch (JsonProcessingException e)
         {
             return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
