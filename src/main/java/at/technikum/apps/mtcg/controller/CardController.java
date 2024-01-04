@@ -3,12 +3,13 @@ package at.technikum.apps.mtcg.controller;
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.PackageRepository;
 import at.technikum.apps.mtcg.repository.UserRepository;
+import at.technikum.apps.mtcg.service.AuthorizationTokenHelper;
 import at.technikum.apps.mtcg.service.CardService;
 import at.technikum.server.http.*;
 
 public class CardController extends Controller
 {
-    private final CardService cardService = new CardService(new CardRepository(), new UserRepository(), new PackageRepository());
+    private final CardService cardService = new CardService(new CardRepository(), new UserRepository(), new PackageRepository(), new AuthorizationTokenHelper());
 
     @Override
     public boolean supports(String route)

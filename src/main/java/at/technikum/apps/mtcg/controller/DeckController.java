@@ -2,13 +2,14 @@ package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.UserRepository;
+import at.technikum.apps.mtcg.service.AuthorizationTokenHelper;
 import at.technikum.apps.mtcg.service.DeckService;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 
 public class DeckController extends Controller{
-    private final DeckService deckService = new DeckService(new CardRepository(), new UserRepository());
+    private final DeckService deckService = new DeckService(new CardRepository(), new UserRepository(), new AuthorizationTokenHelper());
     @Override
     public boolean supports(String route) {
         return route.startsWith("/deck");

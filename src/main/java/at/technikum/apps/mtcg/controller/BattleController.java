@@ -2,6 +2,7 @@ package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.UserRepository;
+import at.technikum.apps.mtcg.service.AuthorizationTokenHelper;
 import at.technikum.apps.mtcg.service.BattleService;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
@@ -9,7 +10,7 @@ import at.technikum.server.http.Response;
 
 public class BattleController extends Controller
 {
-    private final BattleService battleService = new BattleService(new CardRepository(), new UserRepository());
+    private final BattleService battleService = new BattleService(new CardRepository(), new UserRepository(), new AuthorizationTokenHelper());
     private boolean isBattlePending = false;
     private Request enemyPending;
     private String battleLog = "";

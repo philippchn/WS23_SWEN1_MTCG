@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PackageRepository
@@ -46,23 +47,31 @@ public class PackageRepository
         con.close();
     }
 
-    public List<Integer> getAllAvailablePackageId() throws SQLException
+    public List<Integer> getAllAvailablePackageId()
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_ALL_AVAILABLE_PACKAGEID);
-
-        ResultSet rs = pstmt.executeQuery();
-        con.close();
-
-        List<Integer> packageIds = new ArrayList<>();
-        while (rs.next())
+        try
         {
-            packageIds.add(rs.getInt("packageid"));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_ALL_AVAILABLE_PACKAGEID);
+
+            ResultSet rs = pstmt.executeQuery();
+            con.close();
+
+            List<Integer> packageIds = new ArrayList<>();
+            while (rs.next())
+            {
+                packageIds.add(rs.getInt("packageid"));
+            }
+            return packageIds;
         }
-        return packageIds;
+        catch (SQLException e)
+        {
+            return Collections.emptyList();
+        }
     }
 
-    public void buyPackage(String username, int packageId) throws SQLException {
+    public void buyPackage(String username, int packageId) throws SQLException
+    {
         List<RequestCard> cards = getCardsFromPackage(packageId);
 
         Connection con = MTCGDatabase.getConnection();
@@ -81,33 +90,40 @@ public class PackageRepository
         con.close();
     }
 
-    public List<RequestCard> getCardsFromPackage(int packageId) throws SQLException
+    public List<RequestCard> getCardsFromPackage(int packageId)
     {
-        Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt = con.prepareStatement(GET_CARDIDS_FROM_PACKAGE);
-
-        pstmt.setInt(1, packageId);
-        ResultSet rs = pstmt.executeQuery();
-        List<String> cardIds = new ArrayList<>();
-        rs.next();
-        cardIds.add(rs.getString("cardid_1"));
-        cardIds.add(rs.getString("cardid_2"));
-        cardIds.add(rs.getString("cardid_3"));
-        cardIds.add(rs.getString("cardid_4"));
-        cardIds.add(rs.getString("cardid_5"));
-
-        List<RequestCard> cards = new ArrayList<>();
-
-        PreparedStatement pstmtForCard = con.prepareStatement(GET_CARD_FROM_ID);
-        for (String s : cardIds)
+        try
         {
-            pstmtForCard.setString(1, s);
-            ResultSet rsCard = pstmtForCard.executeQuery();
-            rsCard.next();
-            cards.add(new RequestCard(rsCard.getString("cardid"), rsCard.getString("name"), rsCard.getInt("damage")));
+            Connection con = MTCGDatabase.getConnection();
+            PreparedStatement pstmt = con.prepareStatement(GET_CARDIDS_FROM_PACKAGE);
+
+            pstmt.setInt(1, packageId);
+            ResultSet rs = pstmt.executeQuery();
+            List<String> cardIds = new ArrayList<>();
+            rs.next();
+            cardIds.add(rs.getString("cardid_1"));
+            cardIds.add(rs.getString("cardid_2"));
+            cardIds.add(rs.getString("cardid_3"));
+            cardIds.add(rs.getString("cardid_4"));
+            cardIds.add(rs.getString("cardid_5"));
+
+            List<RequestCard> cards = new ArrayList<>();
+
+            PreparedStatement pstmtForCard = con.prepareStatement(GET_CARD_FROM_ID);
+            for (String s : cardIds)
+            {
+                pstmtForCard.setString(1, s);
+                ResultSet rsCard = pstmtForCard.executeQuery();
+                rsCard.next();
+                cards.add(new RequestCard(rsCard.getString("cardid"), rsCard.getString("name"), rsCard.getInt("damage")));
+            }
+            con.close();
+            return cards;
         }
-        con.close();
-        return cards;
+        catch (SQLException e)
+        {
+            return Collections.emptyList();
+        }
     }
 
     public void deleteAll() throws SQLException

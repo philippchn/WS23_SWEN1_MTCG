@@ -18,26 +18,21 @@ public class TradingService
 {
     private final TradingRepository tradingRepository;
     private final CardRepository cardRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public TradingService(TradingRepository tradingRepository, CardRepository cardRepository)
+    public TradingService(TradingRepository tradingRepository, CardRepository cardRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.tradingRepository = tradingRepository;
         this.cardRepository = cardRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response getAvailableTrades()
     {
-        List<Trade> trades;
-        try
-        {
-            trades = tradingRepository.getAvailableTrades();
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        List<Trade> trades = tradingRepository.getAvailableTrades();
 
         if (trades.isEmpty())
         {
@@ -58,7 +53,7 @@ public class TradingService
 
     public Response createTrade(Request request)
     {
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
@@ -73,34 +68,22 @@ public class TradingService
             return ResponseHelper.status(HttpStatus.BAD_REQUEST);
         }
 
-        try
+
+        if (cardRepository.isCardInDeck(trade.CardToTrade()))
         {
-            if (cardRepository.isCardInDeck(trade.CardToTrade()))
-            {
-                return ResponseHelper.status(HttpStatus.FORBIDDEN);
-            }
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
-        catch (SQLException e)
+
+
+        Optional<String> username = cardRepository.getCardOwner(trade.CardToTrade());
+        if (username.isEmpty() || !username.get().equals(authorizationTokenHelper.getUsernameFromToken(request)))
         {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
 
         try
         {
-            Optional<String> username = cardRepository.getCardOwner(trade.CardToTrade());
-            if (username.isEmpty() || !username.get().equals(AuthorizationTokenHelper.getUsernameFromToken(request)))
-            {
-                return ResponseHelper.status(HttpStatus.FORBIDDEN);
-            }
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        try
-        {
-            tradingRepository.createTrade(trade, AuthorizationTokenHelper.getUsernameFromToken(request));
+            tradingRepository.createTrade(trade, authorizationTokenHelper.getUsernameFromToken(request));
         }
         catch (SQLException e)
         {
@@ -114,26 +97,20 @@ public class TradingService
     {
         String tradingDealId = request.getRoute().replace("/tradings/", "");
 
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
-        try
+
+        Optional<String> dealOwner = tradingRepository.getTradeOwner(tradingDealId);
+        if (dealOwner.isEmpty())
         {
-            Optional<String> dealOwner = tradingRepository.getTradeOwner(tradingDealId);
-            if (dealOwner.isEmpty())
-            {
-                return ResponseHelper.status(HttpStatus.NOT_FOUND);
-            }
-            if (!AuthorizationTokenHelper.getUsernameFromToken(request).equals(dealOwner.get()))
-            {
-                return ResponseHelper.status(HttpStatus.FORBIDDEN);
-            }
+            return ResponseHelper.status(HttpStatus.NOT_FOUND);
         }
-        catch (SQLException e)
+        if (!authorizationTokenHelper.getUsernameFromToken(request).equals(dealOwner.get()))
         {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
 
         try
@@ -150,7 +127,7 @@ public class TradingService
 
     public Response doTrade(Request request)
     {
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
@@ -166,55 +143,34 @@ public class TradingService
             return ResponseHelper.status(HttpStatus.BAD_REQUEST);
         }
 
-        try
+        Optional<String> cardOwner = cardRepository.getCardOwner(cardId);
+        if (cardOwner.isEmpty() || !cardOwner.get().equals(authorizationTokenHelper.getUsernameFromToken(request)))
         {
-            Optional<String> cardOwner = cardRepository.getCardOwner(cardId);
-            if (cardOwner.isEmpty() || !cardOwner.get().equals(AuthorizationTokenHelper.getUsernameFromToken(request)))
-            {
-                return ResponseHelper.status(HttpStatus.FORBIDDEN);
-            }
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
 
-        Optional<String> dealOwner;
-        try
+        Optional<String> dealOwner = tradingRepository.getTradeOwner(tradingDealId);
+        if (dealOwner.isEmpty())
         {
-            dealOwner = tradingRepository.getTradeOwner(tradingDealId);
-            if (dealOwner.isEmpty())
-            {
-                return ResponseHelper.status(HttpStatus.NOT_FOUND);
-            }
-            if (dealOwner.get().equals(AuthorizationTokenHelper.getUsernameFromToken(request)))
-            {
-                return ResponseHelper.status(HttpStatus.FORBIDDEN);
-            }
+            return ResponseHelper.status(HttpStatus.NOT_FOUND);
         }
-        catch (SQLException e)
+        if (dealOwner.get().equals(authorizationTokenHelper.getUsernameFromToken(request)))
         {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
 
-        try
+
+        Optional<Float> tradeMindmg = tradingRepository.getMindmg(tradingDealId);
+        Optional<DBCard> card = cardRepository.getCard(cardId);
+        if (card.isEmpty() || tradeMindmg.isEmpty() || card.get().damage() < tradeMindmg.get())
         {
-            Optional<Float> tradeMindmg = tradingRepository.getMindmg(tradingDealId);
-            Optional<DBCard> card = cardRepository.getCard(cardId);
-            if (card.isEmpty() || tradeMindmg.isEmpty() || card.get().damage() < tradeMindmg.get())
-            {
-                return ResponseHelper.status(HttpStatus.FORBIDDEN);
-            }
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
 
         try
         {
             cardRepository.updateCardOwner(cardId, dealOwner.get());
-            cardRepository.updateCardOwner(tradingRepository.getCardIdFromTrade(tradingDealId).get(), AuthorizationTokenHelper.getUsernameFromToken(request));
+            cardRepository.updateCardOwner(tradingRepository.getCardIdFromTrade(tradingDealId).get(), authorizationTokenHelper.getUsernameFromToken(request));
             tradingRepository.deleteTrade(tradingDealId);
         }
         catch (SQLException e)

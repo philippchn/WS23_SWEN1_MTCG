@@ -17,12 +17,14 @@ import java.util.Optional;
 public class UserService
 {
     private final UserRepository userRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public UserService(UserRepository userRepository)
+    public UserService(UserRepository userRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.userRepository = userRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response create(Request request)
@@ -54,15 +56,7 @@ public class UserService
 
     public Response findAll()
     {
-        List<User> users;
-        try
-        {
-            users = userRepository.findAll();
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        List<User> users = userRepository.findAll();
 
         try
         {
@@ -78,24 +72,16 @@ public class UserService
     public Response getUserDataByUsername(Request request)
     {
         String username = request.getRoute().replace("/users/", "");
-        if (AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
+        if (authorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
-        Optional<UserData> userData;
-        try
-        {
-            userData = userRepository.findUserDataByUsername(username);
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Optional<UserData> userData = userRepository.findUserDataByUsername(username);
 
         if (userData.isEmpty())
         {
@@ -116,11 +102,11 @@ public class UserService
     public Response updateUser(Request request)
     {
         String username = request.getRoute().replace("/users/", "");
-        if (AuthorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
+        if (authorizationTokenHelper.tokenUsernameIsNotPathUsername(request, username))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }

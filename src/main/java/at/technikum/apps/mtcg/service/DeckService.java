@@ -17,28 +17,25 @@ public class DeckService
 {
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public DeckService(CardRepository cardRepository, UserRepository userRepository)
+    public DeckService(CardRepository cardRepository, UserRepository userRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response configureDeck(Request request)
     {
         String token = request.getAuthorizationToken();
-        String usernameFromToken = AuthorizationTokenHelper.getUsernameFromToken(request);
-        try
+        String usernameFromToken = authorizationTokenHelper.getUsernameFromToken(request);
+
+        if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
         {
-            if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
         String[] deck;
@@ -56,24 +53,17 @@ public class DeckService
             return ResponseHelper.status(HttpStatus.BAD_REQUEST);
         }
 
-        try
+        for (String s : deck)
         {
-            for (String s : deck)
+            Optional<String> cardOwner = cardRepository.getCardOwner(s);
+            if (cardOwner.isEmpty())
             {
-                Optional<String> cardOwner = cardRepository.getCardOwner(s);
-                if (cardOwner.isEmpty())
-                {
-                    return ResponseHelper.status(HttpStatus.FORBIDDEN);
-                }
-                if (!cardOwner.get().equals(usernameFromToken))
-                {
-                    return ResponseHelper.status(HttpStatus.FORBIDDEN);
-                }
+                return ResponseHelper.status(HttpStatus.FORBIDDEN);
             }
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.BAD_REQUEST);
+            if (!cardOwner.get().equals(usernameFromToken))
+            {
+                return ResponseHelper.status(HttpStatus.FORBIDDEN);
+            }
         }
 
         try
@@ -90,27 +80,17 @@ public class DeckService
     public Response showDeck(Request request)
     {
         String token = request.getAuthorizationToken();
-        String usernameFromToken = AuthorizationTokenHelper.getUsernameFromToken(request);
-        try
+        String usernameFromToken = authorizationTokenHelper.getUsernameFromToken(request);
+
+        if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
         {
-            if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
-            {
-                return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
-            }
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
-        List<RequestCard> deck;
-        try
+        List<RequestCard> deck = cardRepository.getSimpleDeck(usernameFromToken);
+        if (deck.isEmpty())
         {
-            deck = cardRepository.getSimpleDeck(usernameFromToken);
-        }
-        catch (SQLException e)
-        {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHelper.status(HttpStatus.NO_CONTENT);
         }
 
         if (request.getRoute().endsWith("format=plain"))

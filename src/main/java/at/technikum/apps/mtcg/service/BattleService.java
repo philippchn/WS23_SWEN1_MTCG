@@ -16,35 +16,36 @@ public class BattleService
 {
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private List<DBCard> playerOneDeck;
     private  List<DBCard> playerTwoDeck;
-    private List<String> battleLog;
+    private List<String> battleLog = new ArrayList<>();
     public final String ERROR = "ERROR";
-    public BattleService(CardRepository cardRepository, UserRepository userRepository)
+    public BattleService(CardRepository cardRepository, UserRepository userRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public boolean invalidUser(Request request)
     {
-        return AuthorizationTokenHelper.invalidToken(request);
+        return authorizationTokenHelper.invalidToken(request);
     }
 
 
     public String startBattle(Request request, Request enemyPendingRequest)
     {
         battleLog = new ArrayList<>();
-        String playerOneUsername = AuthorizationTokenHelper.getUsernameFromToken(request);
-        String playerTwoUsername = AuthorizationTokenHelper.getUsernameFromToken(enemyPendingRequest);
+        String playerOneUsername = authorizationTokenHelper.getUsernameFromToken(request);
+        String playerTwoUsername = authorizationTokenHelper.getUsernameFromToken(enemyPendingRequest);
 
-        try
-        {
-            playerOneDeck = cardRepository.getDetailDeck(playerOneUsername);
-            playerTwoDeck = cardRepository.getDetailDeck(playerTwoUsername);
-        }
-        catch (SQLException e)
+
+        playerOneDeck = cardRepository.getDetailDeck(playerOneUsername);
+        playerTwoDeck = cardRepository.getDetailDeck(playerTwoUsername);
+
+        if (playerOneDeck.isEmpty() || playerTwoDeck.isEmpty())
         {
             return ERROR;
         }
@@ -104,7 +105,7 @@ public class BattleService
         }
     }
 
-    private float damageModifier(DBCard attacker, DBCard defender)
+    float damageModifier(DBCard attacker, DBCard defender)
     {
         float damage = attacker.damage();
 
@@ -130,12 +131,6 @@ public class BattleService
 //            battleLog.add("The Wizzard controls the Ork! It can't attack!");
 //            return 0;
 //        }
-        //WaterSpell -> Knight
-        if (attacker.name().equals("WaterSpell") && defender.name().equals("Knight"))
-        {
-            battleLog.add("The WaterSpell drowns the Knight!");
-            return 10000;
-        }
         // Dragon -> FireElf
         if (attacker.name().equals("Dragon") && defender.name().equals("FireElf"))
         {
@@ -147,6 +142,13 @@ public class BattleService
 
     private float damageSpellModifier(DBCard attacker, DBCard defender, float damage)
     {
+        //WaterSpell -> Knight
+        if (attacker.name().equals("WaterSpell") && defender.name().equals("Knight"))
+        {
+            battleLog.add("The WaterSpell drowns the Knight!");
+            return 10000;
+        }
+
         // Spell -> Kraken
         if (defender.name().equals("Kraken"))
         {
@@ -193,7 +195,7 @@ public class BattleService
         return damage;
     }
 
-    private void checkWinner(String playerTwoUsername, String playerOneUsername)
+    void checkWinner(String playerTwoUsername, String playerOneUsername)
     {
         if (playerOneDeck.isEmpty())
         {

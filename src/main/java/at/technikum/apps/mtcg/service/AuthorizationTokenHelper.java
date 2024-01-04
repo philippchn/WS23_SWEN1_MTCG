@@ -7,43 +7,33 @@ import at.technikum.server.http.Request;
 import java.sql.SQLException;
 import java.util.Optional;
 
-class AuthorizationTokenHelper
+public class AuthorizationTokenHelper
 {
     private static final UserRepository userRepository = new UserRepository();
 
-    static boolean invalidToken(Request request)
+    boolean invalidToken(Request request)
     {
         String username = getUsernameFromToken(request);
         if (request.getAuthorizationToken().equals("admin-mtcgToken"))
         {
             return false;
         }
-        try
-        {
-            Optional<Token> token = userRepository.getTokenOfUser(username);
-            if (token.isEmpty())
-            {
-                return true;
-            }
-        }
-        catch (SQLException e)
-        {
-            return true;
-        }
-        return false;
+
+        Optional<Token> token = userRepository.getTokenOfUser(username);
+        return token.isEmpty();
     }
 
-    static boolean tokenUsernameIsNotPathUsername(Request request, String username)
+    boolean tokenUsernameIsNotPathUsername(Request request, String username)
     {
         return !username.equals(getUsernameFromToken(request));
     }
 
-    static boolean isAdmin(Request request)
+    boolean isAdmin(Request request)
     {
         return request.getAuthorizationToken().equals("admin-mtcgToken");
     }
 
-    static String getUsernameFromToken(Request request)
+    String getUsernameFromToken(Request request)
     {
         return request.getAuthorizationToken().replace("-mtcgToken", "");
     }
