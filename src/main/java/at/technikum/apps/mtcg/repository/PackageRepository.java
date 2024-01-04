@@ -14,7 +14,7 @@ public class PackageRepository
 {
     // t_package
     private final String CREATE_PACKAGE = "INSERT INTO t_package (cardid_1, cardid_2, cardid_3, cardid_4, cardid_5) VALUES (?,?,?,?,?)";
-    private final String GET_ALL_AVAILABLE_PACKAGEID = "SELECT packageId FROM t_package WHERE available = true;";
+    private final String GET_ALL_AVAILABLE_PACKAGEID = "SELECT packageId FROM t_package WHERE available = true ORDER BY packageid";
     private final String SET_PACKAGE_UNAVAILABLE = "UPDATE t_package SET available = false WHERE packageId = ?";
     private final String GET_CARDIDS_FROM_PACKAGE = "SELECT cardid_1, cardid_2, cardid_3, cardid_4, cardid_5 FROM t_package WHERE packageid = ?";
     private final String DELETE_ALL_PACKAGE = "DELETE FROM t_package";
