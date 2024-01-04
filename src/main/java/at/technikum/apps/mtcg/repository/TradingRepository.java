@@ -20,6 +20,7 @@ public class TradingRepository
     private final String GET_TRADE_OWNER = "SELECT owner FROM t_trades WHERE id = ?";
     private final String GET_TRADE_MINDMG = "SELECT mindmg FROM t_trades WHERE id = ?";
     private final String GET_CARD_ID = "SELECT cardid FROM t_trades WHERE id = ?";
+    private final String DELETE_TRADES_TABLE = "DELETE FROM t_trades";
 
     private final at.technikum.apps.mtcg.data.MTCGDatabase MTCGDatabase = new MTCGDatabase();
 
@@ -120,5 +121,14 @@ public class TradingRepository
             return Optional.of(rs.getString("cardid"));
         }
         return Optional.empty();
+    }
+
+    public void deleteAll() throws SQLException
+    {
+        Connection con = MTCGDatabase.getConnection();
+        PreparedStatement pstmt = con.prepareStatement(DELETE_TRADES_TABLE);
+
+        pstmt.execute();
+        con.close();
     }
 }

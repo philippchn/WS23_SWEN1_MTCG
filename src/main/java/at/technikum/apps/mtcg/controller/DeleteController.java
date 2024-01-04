@@ -2,6 +2,7 @@ package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.PackageRepository;
+import at.technikum.apps.mtcg.repository.TradingRepository;
 import at.technikum.apps.mtcg.repository.UserRepository;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
@@ -23,9 +24,11 @@ public class DeleteController extends Controller
 
         try
         {
+            TradingRepository tradingRepository = new TradingRepository();
             PackageRepository packageRepository = new PackageRepository();
             CardRepository cardRepository = new CardRepository();
             UserRepository userRepository = new UserRepository();
+            tradingRepository.deleteAll();
             packageRepository.deleteAll();
             cardRepository.deleteAll();
             userRepository.deleteAll();
