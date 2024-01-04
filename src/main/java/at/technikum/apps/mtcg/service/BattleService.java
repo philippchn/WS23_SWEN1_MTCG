@@ -3,11 +3,12 @@ package at.technikum.apps.mtcg.service;
 import at.technikum.apps.mtcg.entity.card.DBCard;
 import at.technikum.apps.mtcg.repository.CardRepository;
 import at.technikum.apps.mtcg.repository.UserRepository;
-import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
-import at.technikum.server.http.Response;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -15,8 +16,11 @@ public class BattleService
 {
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private List<DBCard> playerOneDeck;
     private  List<DBCard> playerTwoDeck;
+    private List<String> battleLog;
+    public final String ERROR = "ERROR";
     public BattleService(CardRepository cardRepository, UserRepository userRepository)
     {
         this.cardRepository = cardRepository;
@@ -28,10 +32,10 @@ public class BattleService
         return AuthorizationTokenHelper.invalidToken(request);
     }
 
-    public Response startBattle(Request request, Request enemyPendingRequest)
-    {
-        System.out.println("Battle started");
 
+    public String startBattle(Request request, Request enemyPendingRequest)
+    {
+        battleLog = new ArrayList<>();
         String playerOneUsername = AuthorizationTokenHelper.getUsernameFromToken(request);
         String playerTwoUsername = AuthorizationTokenHelper.getUsernameFromToken(enemyPendingRequest);
 
@@ -42,36 +46,39 @@ public class BattleService
         }
         catch (SQLException e)
         {
-            return ResponseHelper.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ERROR;
         }
+
+        battleLog.add("STARTING BATTLE!");
+        battleLog.add(playerOneUsername + " VS " + playerTwoUsername);
+        battleLog.add("||||||||||||||||||||||||");
 
         int maxGames = 0;
         while(!playerOneDeck.isEmpty() && !playerTwoDeck.isEmpty() && maxGames++ < 100)
         {
-            cardFight();
+            cardFight(playerOneUsername, playerTwoUsername);
         }
 
+        battleLog.add("||||||||||||||||||||||||");
+
+        checkWinner(playerTwoUsername, playerOneUsername);
+
+        battleLog.add("BATTLE OVER!");
+
+        String battleLogJson;
         try
         {
-            if (playerOneDeck.isEmpty())
-            {
-                setElo(playerTwoUsername, playerOneUsername);
-                return ResponseHelper.statusJsonBody(HttpStatus.OK, "{\n\t\"winner\": \"" + playerTwoUsername + "\"\n}");
-            }
-            else if (playerTwoDeck.isEmpty())
-            {
-                setElo(playerOneUsername, playerTwoUsername);
-                return ResponseHelper.statusJsonBody(HttpStatus.OK, "{\n\t\"winner\": \"" + playerOneUsername + "\"\n}");
-            }
+            battleLogJson = objectMapper.writeValueAsString(battleLog);
         }
-        catch (RuntimeException e)
+        catch (JsonProcessingException e)
         {
-            return ResponseHelper.statusJsonBody(HttpStatus.OK, "{\n\t\"message\": \"Battle over but error accessing the Scoreboard\"\n}");
+            return ERROR;
         }
-        return ResponseHelper.statusJsonBody(HttpStatus.OK,"{\n\t\"winner\": \"No winner\"\n}");
+
+        return battleLogJson;
     }
 
-    private void cardFight()
+    private void cardFight(String playerOne, String playerTwo)
     {
         int randomIndexOne = new Random().nextInt(playerOneDeck.size());
         int randomIndexTwo = new Random().nextInt(playerTwoDeck.size());
@@ -81,13 +88,19 @@ public class BattleService
 
         if (playerOneDamage > playerTwoDamage)
         {
+            battleLog.add("-) " + playerOneDeck.get(randomIndexOne).name() + " card of " +  playerOne + " won with " + playerOneDamage + " damage dealt against a " + playerTwoDeck.get(randomIndexTwo).name() + "!");
             playerOneDeck.add(playerTwoDeck.get(randomIndexTwo));
             playerTwoDeck.remove(randomIndexTwo);
         }
         else if (playerOneDamage < playerTwoDamage)
         {
+            battleLog.add("-) " + playerTwoDeck.get(randomIndexTwo).name() + " card of " +  playerTwo + " won with " + playerTwoDamage + " damage dealt against a " + playerOneDeck.get(randomIndexOne).name() + "!");
             playerTwoDeck.add(playerOneDeck.get(randomIndexOne));
             playerOneDeck.remove(randomIndexOne);
+        }
+        else
+        {
+            battleLog.add("-) None of the cards won!");
         }
     }
 
@@ -108,21 +121,25 @@ public class BattleService
         // Goblin -> Dragon
         if (attacker.name().contains("Goblin") && defender.name().equals("Dragon"))
         {
+            battleLog.add("The Goblin is too scared too attack the Dragon!");
             return 0;
         }
         // Ork -> Wizard
-        if (attacker.name().equals("Ork") && !defender.isMonster() )
-        {
-            return 0;
-        }
-//        //WaterSpell -> Knight
-//        if (attacker.name().equals("WaterSpell") && defender.name().equals("Knight"))
+//        if (attacker.name().equals("Ork") && !defender.isMonster() )
 //        {
-//            return 10000;
+//            battleLog.add("The Wizzard controls the Ork! It can't attack!");
+//            return 0;
 //        }
+        //WaterSpell -> Knight
+        if (attacker.name().equals("WaterSpell") && defender.name().equals("Knight"))
+        {
+            battleLog.add("The WaterSpell drowns the Knight!");
+            return 10000;
+        }
         // Dragon -> FireElf
         if (attacker.name().equals("Dragon") && defender.name().equals("FireElf"))
         {
+            battleLog.add("The Fire Elf evades the attacks of the Dragon!");
             return 0;
         }
         return damage;
@@ -133,43 +150,65 @@ public class BattleService
         // Spell -> Kraken
         if (defender.name().equals("Kraken"))
         {
+            battleLog.add("The Kraken is immune to Spells!");
             return 0;
         }
 
         // Water -> Fire
         if (attacker.elementType().equals("water") && defender.elementType().equals("fire"))
         {
-            damage = damage * 2;
+            battleLog.add("Water is very effective against Fire!");
+            return damage * 2;
         }
         // Fire -> Water
         if (attacker.elementType().equals("fire") && defender.elementType().equals("water"))
         {
-            damage = damage / 2;
+            return damage / 2;
         }
 
         // Fire -> Normal
         if (attacker.elementType().equals("fire") && defender.elementType().equals("regular"))
         {
-            damage = damage * 2;
+            battleLog.add("Fire is very effective against Normal!");
+            return damage * 2;
         }
         // Normal -> Fire
         if (attacker.elementType().equals("regular") && defender.elementType().equals("fire"))
         {
-            damage = damage / 2;
+            return damage / 2;
         }
 
         // Normal -> Water
         if (attacker.elementType().equals("regular") && defender.elementType().equals("water"))
         {
-            damage = damage * 2;
+            battleLog.add("Normal is very effective against Water!");
+            return damage * 2;
         }
         // Water -> Normal
         if (attacker.elementType().equals("water") && defender.elementType().equals("regular"))
         {
-            damage = damage / 2;
+            return damage / 2;
         }
 
         return damage;
+    }
+
+    private void checkWinner(String playerTwoUsername, String playerOneUsername)
+    {
+        if (playerOneDeck.isEmpty())
+        {
+            battleLog.add(playerTwoUsername + " WON!");
+            setElo(playerTwoUsername, playerOneUsername);
+        }
+        else if (playerTwoDeck.isEmpty())
+        {
+            battleLog.add(playerOneUsername + " WON!");
+            setElo(playerOneUsername, playerTwoUsername);
+        }
+        else
+        {
+            battleLog.add("BATTLE ENDS IN A DRAW!");
+        }
     }
 
     private void setElo(String winnerUsername, String loserUsername)
@@ -181,7 +220,7 @@ public class BattleService
         }
         catch (SQLException e)
         {
-            throw new RuntimeException();
+            System.out.println("ERROR SETTING ELO");
         }
     }
 }
