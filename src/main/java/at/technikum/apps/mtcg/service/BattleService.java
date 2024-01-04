@@ -16,28 +16,30 @@ public class BattleService
 {
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private List<DBCard> playerOneDeck;
     private  List<DBCard> playerTwoDeck;
     private List<String> battleLog;
     public final String ERROR = "ERROR";
-    public BattleService(CardRepository cardRepository, UserRepository userRepository)
+    public BattleService(CardRepository cardRepository, UserRepository userRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public boolean invalidUser(Request request)
     {
-        return AuthorizationTokenHelper.invalidToken(request);
+        return authorizationTokenHelper.invalidToken(request);
     }
 
 
     public String startBattle(Request request, Request enemyPendingRequest)
     {
         battleLog = new ArrayList<>();
-        String playerOneUsername = AuthorizationTokenHelper.getUsernameFromToken(request);
-        String playerTwoUsername = AuthorizationTokenHelper.getUsernameFromToken(enemyPendingRequest);
+        String playerOneUsername = authorizationTokenHelper.getUsernameFromToken(request);
+        String playerTwoUsername = authorizationTokenHelper.getUsernameFromToken(enemyPendingRequest);
 
 
         playerOneDeck = cardRepository.getDetailDeck(playerOneUsername);

@@ -10,7 +10,6 @@ import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.postgresql.plugin.AuthenticationRequestType;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -21,20 +20,23 @@ public class CardService
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
     private final PackageRepository packageRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public CardService(CardRepository cardRepository, UserRepository userRepository, PackageRepository packageRepository)
+    public CardService(CardRepository cardRepository, UserRepository userRepository, PackageRepository packageRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
         this.packageRepository = packageRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response getAllCards(Request request)
     {
         String token = request.getAuthorizationToken();
-        String usernameFromToken = AuthorizationTokenHelper.getUsernameFromToken(request);
+        String usernameFromToken = authorizationTokenHelper.getUsernameFromToken(request);
 
         if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
         {
@@ -87,7 +89,7 @@ public class CardService
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
-        String username = AuthorizationTokenHelper.getUsernameFromToken(request);
+        String username = authorizationTokenHelper.getUsernameFromToken(request);
         if (!cardOneOwner.get().equals(username) || !cardTwoOwner.get().equals(username))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);

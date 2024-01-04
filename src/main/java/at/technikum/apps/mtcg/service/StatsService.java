@@ -8,28 +8,30 @@ import at.technikum.server.http.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class StatsService
 {
     private final UserRepository userRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public StatsService(UserRepository userRepository)
+    public StatsService(UserRepository userRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.userRepository = userRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response getUserStats(Request request)
     {
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
-        String username = AuthorizationTokenHelper.getUsernameFromToken(request);
+        String username = authorizationTokenHelper.getUsernameFromToken(request);
 
         Optional<UserStats> userStats;
         userStats = userRepository.getUserStats(username);

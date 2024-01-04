@@ -1,15 +1,15 @@
 package at.technikum.apps.mtcg.controller;
 
 import at.technikum.apps.mtcg.repository.UserRepository;
+import at.technikum.apps.mtcg.service.AuthorizationTokenHelper;
 import at.technikum.apps.mtcg.service.StatsService;
-import at.technikum.server.http.HttpContentType;
 import at.technikum.server.http.HttpStatus;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 
 public class StatsController extends Controller{
 
-    private final StatsService statsService = new StatsService(new UserRepository());
+    private final StatsService statsService = new StatsService(new UserRepository(), new AuthorizationTokenHelper());
     @Override
     public boolean supports(String route)
     {

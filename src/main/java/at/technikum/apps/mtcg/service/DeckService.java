@@ -17,18 +17,21 @@ public class DeckService
 {
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public DeckService(CardRepository cardRepository, UserRepository userRepository)
+    public DeckService(CardRepository cardRepository, UserRepository userRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response configureDeck(Request request)
     {
         String token = request.getAuthorizationToken();
-        String usernameFromToken = AuthorizationTokenHelper.getUsernameFromToken(request);
+        String usernameFromToken = authorizationTokenHelper.getUsernameFromToken(request);
 
         if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
         {
@@ -77,7 +80,7 @@ public class DeckService
     public Response showDeck(Request request)
     {
         String token = request.getAuthorizationToken();
-        String usernameFromToken = AuthorizationTokenHelper.getUsernameFromToken(request);
+        String usernameFromToken = authorizationTokenHelper.getUsernameFromToken(request);
 
         if (token.equals("INVALID") || userRepository.findUserByUsername(usernameFromToken).isEmpty())
         {

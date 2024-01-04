@@ -18,13 +18,16 @@ public class TradingService
 {
     private final TradingRepository tradingRepository;
     private final CardRepository cardRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public TradingService(TradingRepository tradingRepository, CardRepository cardRepository)
+    public TradingService(TradingRepository tradingRepository, CardRepository cardRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.tradingRepository = tradingRepository;
         this.cardRepository = cardRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response getAvailableTrades()
@@ -50,7 +53,7 @@ public class TradingService
 
     public Response createTrade(Request request)
     {
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
@@ -73,14 +76,14 @@ public class TradingService
 
 
         Optional<String> username = cardRepository.getCardOwner(trade.CardToTrade());
-        if (username.isEmpty() || !username.get().equals(AuthorizationTokenHelper.getUsernameFromToken(request)))
+        if (username.isEmpty() || !username.get().equals(authorizationTokenHelper.getUsernameFromToken(request)))
         {
             return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
 
         try
         {
-            tradingRepository.createTrade(trade, AuthorizationTokenHelper.getUsernameFromToken(request));
+            tradingRepository.createTrade(trade, authorizationTokenHelper.getUsernameFromToken(request));
         }
         catch (SQLException e)
         {
@@ -94,7 +97,7 @@ public class TradingService
     {
         String tradingDealId = request.getRoute().replace("/tradings/", "");
 
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
@@ -105,7 +108,7 @@ public class TradingService
         {
             return ResponseHelper.status(HttpStatus.NOT_FOUND);
         }
-        if (!AuthorizationTokenHelper.getUsernameFromToken(request).equals(dealOwner.get()))
+        if (!authorizationTokenHelper.getUsernameFromToken(request).equals(dealOwner.get()))
         {
             return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
@@ -124,7 +127,7 @@ public class TradingService
 
     public Response doTrade(Request request)
     {
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
@@ -141,7 +144,7 @@ public class TradingService
         }
 
         Optional<String> cardOwner = cardRepository.getCardOwner(cardId);
-        if (cardOwner.isEmpty() || !cardOwner.get().equals(AuthorizationTokenHelper.getUsernameFromToken(request)))
+        if (cardOwner.isEmpty() || !cardOwner.get().equals(authorizationTokenHelper.getUsernameFromToken(request)))
         {
             return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
@@ -151,7 +154,7 @@ public class TradingService
         {
             return ResponseHelper.status(HttpStatus.NOT_FOUND);
         }
-        if (dealOwner.get().equals(AuthorizationTokenHelper.getUsernameFromToken(request)))
+        if (dealOwner.get().equals(authorizationTokenHelper.getUsernameFromToken(request)))
         {
             return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
@@ -167,7 +170,7 @@ public class TradingService
         try
         {
             cardRepository.updateCardOwner(cardId, dealOwner.get());
-            cardRepository.updateCardOwner(tradingRepository.getCardIdFromTrade(tradingDealId).get(), AuthorizationTokenHelper.getUsernameFromToken(request));
+            cardRepository.updateCardOwner(tradingRepository.getCardIdFromTrade(tradingDealId).get(), authorizationTokenHelper.getUsernameFromToken(request));
             tradingRepository.deleteTrade(tradingDealId);
         }
         catch (SQLException e)

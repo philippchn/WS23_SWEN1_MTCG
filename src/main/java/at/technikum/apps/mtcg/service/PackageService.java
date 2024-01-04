@@ -17,13 +17,17 @@ public class PackageService
 {
     private final PackageRepository packageRepository;
     private final CardRepository cardRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public PackageService(PackageRepository packageRepository, CardRepository cardRepository)
+
+    public PackageService(PackageRepository packageRepository, CardRepository cardRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.packageRepository = packageRepository;
         this.cardRepository = cardRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response createPackage(Request request)
@@ -32,7 +36,7 @@ public class PackageService
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
-        if (!AuthorizationTokenHelper.isAdmin(request))
+        if (!authorizationTokenHelper.isAdmin(request))
         {
             return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }

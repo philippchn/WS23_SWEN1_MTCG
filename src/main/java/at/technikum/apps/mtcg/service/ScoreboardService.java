@@ -8,23 +8,25 @@ import at.technikum.server.http.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class ScoreboardService
 {
     private final UserRepository userRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public ScoreboardService(UserRepository userRepository)
+    public ScoreboardService(UserRepository userRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.userRepository = userRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response getEloScoreboard(Request request)
     {
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }

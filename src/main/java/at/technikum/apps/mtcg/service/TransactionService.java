@@ -17,13 +17,16 @@ public class TransactionService
 {
     private final PackageRepository packageRepository;
     private final UserRepository userRepository;
+    private final AuthorizationTokenHelper authorizationTokenHelper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public TransactionService(PackageRepository packageRepository, UserRepository userRepository)
+    public TransactionService(PackageRepository packageRepository, UserRepository userRepository, AuthorizationTokenHelper authorizationTokenHelper)
     {
         this.packageRepository = packageRepository;
         this.userRepository = userRepository;
+        this.authorizationTokenHelper = authorizationTokenHelper;
     }
 
     public Response buyPackage(Request request)
@@ -33,12 +36,12 @@ public class TransactionService
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
 
-        String username = AuthorizationTokenHelper.getUsernameFromToken(request);
+        String username = authorizationTokenHelper.getUsernameFromToken(request);
         int coins;
         List<RequestCard> acquiredCards;
         String cardsJson;
 
-        if (AuthorizationTokenHelper.invalidToken(request))
+        if (authorizationTokenHelper.invalidToken(request))
         {
             return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
         }
