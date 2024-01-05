@@ -37,10 +37,10 @@ CREATE TABLE IF NOT EXISTS t_package (
 
 CREATE TABLE IF NOT EXISTS t_deck (
     username varchar(255) PRIMARY KEY REFERENCES t_user(username),
-    cardId_1 varchar(255),
-    cardId_2 varchar(255),
-    cardId_3 varchar(255),
-    cardId_4 varchar(255)
+    cardId_1 varchar(255) REFERENCES t_card(cardId),
+    cardId_2 varchar(255) REFERENCES t_card(cardId),
+    cardId_3 varchar(255) REFERENCES t_card(cardId),
+    cardId_4 varchar(255) REFERENCES t_card(cardId)
 );
 
 CREATE TABLE IF NOT EXISTS t_stats (
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS t_stats (
     elo INT DEFAULT 100,
     wins INT DEFAULT 0,
     losses INT DEFAULT 0
-)
+);
 
 CREATE TABLE IF NOT EXISTS t_trades (
     id varchar(255) PRIMARY KEY,

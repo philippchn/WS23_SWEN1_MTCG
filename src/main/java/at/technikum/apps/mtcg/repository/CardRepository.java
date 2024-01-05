@@ -129,8 +129,8 @@ public class CardRepository
     public void deleteAll() throws SQLException
     {
         Connection con = MTCGDatabase.getConnection();
-        PreparedStatement pstmt2 = con.prepareStatement(DELETE_DECKS_TABLE);
-        PreparedStatement pstmt = con.prepareStatement(DELETE_CARDS_TABLE);
+        PreparedStatement pstmt = con.prepareStatement(DELETE_DECKS_TABLE);
+        PreparedStatement pstmt2 = con.prepareStatement(DELETE_CARDS_TABLE);
         pstmt.execute();
         pstmt2.execute();
         con.close();
