@@ -22,6 +22,10 @@ echo PRINT tasty's CARDS BEFORE THE UPGRADE
 echo .
 curl -X GET http://localhost:10001/cards --header "Authorization: Bearer tasty-mtcgToken"
 echo .
+echo UPGRADE Card (should fail. Not same type)
+echo .
+curl -X POST http://localhost:10001/cards --header "Authorization: Bearer tasty-mtcgToken" -d "[\"50fe2184-8d13-46eb-840c-6b1712980c4f\", \"3871d45b-b630-4a0d-8bc6-a5fc56b6a043\"]"
+echo .
 echo UPGRADE Card
 echo .
 curl -X POST http://localhost:10001/cards --header "Authorization: Bearer tasty-mtcgToken" -d "[\"f950e626-93b3-404e-8cd4-c160649c6366\", \"3871d45b-b630-4a0d-8bc6-a5fc56b6a043\"]"

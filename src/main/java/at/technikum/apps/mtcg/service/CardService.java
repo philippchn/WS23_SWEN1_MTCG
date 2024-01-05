@@ -106,7 +106,7 @@ public class CardService
         }
         if (!card1.get().name().equals(card2.get().name()))
         {
-            return ResponseHelper.status(HttpStatus.UNAUTHORIZED);
+            return ResponseHelper.status(HttpStatus.FORBIDDEN);
         }
 
         try
