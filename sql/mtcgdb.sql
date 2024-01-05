@@ -35,11 +35,6 @@ CREATE TABLE IF NOT EXISTS t_package (
     available BOOLEAN DEFAULT true
 );
 
-CREATE TABLE IF NOT EXISTS t_userToPackage (
-    username VARCHAR(255) REFERENCES t_user(username) NOT NULL,
-    packageId INT REFERENCES t_package(packageId) NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS t_deck (
     username varchar(255) PRIMARY KEY REFERENCES t_user(username),
     cardId_1 varchar(255),
