@@ -4,12 +4,11 @@ import at.technikum.apps.mtcg.entity.Token;
 import at.technikum.apps.mtcg.repository.UserRepository;
 import at.technikum.server.http.Request;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class AuthorizationTokenHelper
 {
-    private static final UserRepository userRepository = new UserRepository();
+    private final UserRepository userRepository = new UserRepository();
 
     boolean invalidToken(Request request)
     {
