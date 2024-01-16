@@ -1,10 +1,14 @@
 # Protocol by Philipp Chorn
 
+## GitHub
+
+GitHub Repo: https://github.com/philippchn/WS23_SWEN1_MTCG
+
 ## Unique Feature
 
 The unique feature is the ability to be able to upgrade cards. If a user has two cards which are of the same type, for example two Dragons, they can fuse those two cards to get a stronger version. The damage of the two cards is summed up and 20 bonus damage is added. Check the *MTC_W_UniqueFeature.exercise.curl.bat* to see how the requests are send to upgrade a card.
 
-## Technical Steps
+## Design, Technical Steps and Lessons learned
 
 The socket Application starts a server in the **Main** class. The server receives an application to host. In our case it is the **MtcgApp**. The server listens for requests and sends them to the **handle** function of the MtcgApp. For each request the server starts a new **thread** to allow multiple requests to be processed. It will then be send to the correct **Controller** Class.
 
